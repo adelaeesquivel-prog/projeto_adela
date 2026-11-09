@@ -1,182 +1,38 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Léo Barbas | Agendamento</title>
+    <title>Barbearia</title>
     <link rel="stylesheet" href="style.css">
-    <script src="script.js" defer></script>
 </head>
-
 <body>
 
     <header>
-        <h1>✂ BARBEIROS (teste)</h1>
-        <p>Seu estilo começa aqui!</p>
+        <div class="logo">
+            Barbearia Prime
+        </div>
+
+        <nav>
+            <ul>
+                <li><a href="index.php">Home</a></li>
+                <li><a href="agenda.php">Agendamento</a></li>
+                <li><a href="servicos.php">Serviços</a></li>
+                <li><a href="admin.php">ADM</a></li>
+            </ul>
+        </nav>
     </header>
 
-    <main class="container">
+    <main>
+        <section class="hero">
+            <h1>Bem-vindo à Barbearia Prime</h1>
+            <p>Estilo, tradição e qualidade para você.</p>
 
-        <section class="card" id="areaCliente">
-            <h2>Agende seu horário</h2>
-
-            <form id="formAgendamento">
-
-                <label>Nome completo</label>
-                <input type="text" id="nome" required placeholder="Digite seu nome">
-
-                <label>Telefone</label>
-                <input type="tel" id="telefone" required placeholder="(00) 00000-0000">
-
-                <label>Escolha o serviço</label>
-                <select id="servico" required></select>
-
-                <label>Escolha a data</label>
-                <input type="date" id="data" required>
-
-                <label>Escolha o horário</label>
-                <select id="horario" required>
-                    <option value="">Selecione uma data primeiro</option>
-                </select>
-
-                <p class="aviso" id="mensagem"></p>
-
-                <button type="submit" class="full">
-
-                    CONFIRMAR AGENDAMENTO
-                </button>
-
-            </form>
+            <a href="agendamento.php" class="btn">
+                Agendar Horário
+            </a>
         </section>
-
-        <p class="admin-link" id="linkAdmin">
-
-            Área do administrador
-        </p>
-
-        <section class="card hidden" id="areaAdmin">
-            <h2>Painel administrativo</h2>
-
-            <button id="btnVoltar">Voltar ao site</button>
-
-            <h3 class="subtitulo">Agendamentos</h3>
-            <div id="listaAgendamentos"></div>
-
-            <hr>
-
-            <h3>Cadastro de serviços</h3>
-
-            <label>Nome do serviço</label>
-            <input id="novoServico" placeholder="Ex: Corte degradê">
-
-            <label>Preço (R$)</label>
-            <input id="precoServico" type="number" min="0" step="0.01" placeholder="30">
-
-            <button id="btnCadastrarServico">Cadastrar serviço</button>
-
-            <div id="listaServicos"></div>
-        </section>
-
     </main>
 
-    <footer>
-
-        © 2026 Léo Barbas - Todos os direitos reservados
-    </footer>
-
 </body>
-
-</html>
-
-
-<!DOCTYPE html>
-<html lang="pt-BR">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Léo Barbas | Agendamento</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="script.js" defer></script>
-</head>
-
-<body>
-
-    <header>
-        <h1>✂ LÉO BARBAS</h1>
-        <p>Seu estilo começa aqui!</p>
-    </header>
-
-    <main class="container">
-
-        <section class="card" id="areaCliente">
-            <h2>Agende seu horário</h2>
-
-            <form id="formAgendamento">
-
-                <label>Nome completo</label>
-                <input type="text" id="nome" required placeholder="Digite seu nome">
-
-                <label>Telefone</label>
-                <input type="tel" id="telefone" required placeholder="(00) 00000-0000">
-
-                <label>Escolha o serviço</label>
-                <select id="servico" required></select>
-
-                <label>Escolha a data</label>
-                <input type="date" id="data" required>
-
-                <label>Escolha o horário</label>
-                <select id="horario" required>
-                    <option value="">Selecione uma data primeiro</option>
-                </select>
-
-                <p class="aviso" id="mensagem"></p>
-
-                <button type="submit" class="full">
-
-                    CONFIRMAR AGENDAMENTO
-                </button>
-
-            </form>
-        </section>
-
-        <p class="admin-link" id="linkAdmin">
-
-            Área do administrador
-        </p>
-
-        <section class="card hidden" id="areaAdmin">
-            <h2>Painel administrativo</h2>
-
-            <button id="btnVoltar">Voltar ao site</button>
-
-            <h3 class="subtitulo">Agendamentos</h3>
-            <div id="listaAgendamentos"></div>
-
-            <hr>
-
-            <h3>Cadastro de serviços</h3>
-
-            <label>Nome do serviço</label>
-            <input id="novoServico" placeholder="Ex: Corte degradê">
-
-            <label>Preço (R$)</label>
-            <input id="precoServico" type="number" min="0" step="0.01" placeholder="30">
-
-            <button id="btnCadastrarServico">Cadastrar serviço</button>
-
-            <div id="listaServicos"></div>
-        </section>
-
-    </main>
-
-    <footer>
-
-        © 2026 Léo Barbas - Todos os direitos reservados
-    </footer>
-
-</body>
-
 </html>
