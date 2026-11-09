@@ -254,4 +254,40 @@ footer {
 
 }
 
- 
+ .servico {
+    background: #303030;
+    border-left: 4px solid #d6aa53;
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 8px;
+}
+
+.servico h3 {
+    color: #d6aa53;
+    margin-bottom: 8px;
+}
+
+.servico p {
+    color: #ccc;
+    margin-bottom: 10px;
+}
+
+.servico strong {
+    color: #4caf50;
+    font-size: 18px;
+}
+
+.btn-voltar {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 13px 18px;
+    background: #c69b45;
+    color: #111;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+.btn-voltar:hover {
+    background: #e0b65f;
+}
