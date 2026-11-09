@@ -1,52 +1,44 @@
-// Exibe os mesmos serviços cadastrados no sistema de agendamento.
-const areaServicos = document.getElementById("cardsServicos");
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Léo Barbas | Serviços</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="site-pages.css">
+  <script src="servicos.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="logo" href="home.html">✂ LÉO BARBAS</a>
+    <p>Seu estilo começa aqui!</p>
+    <nav class="site-nav" aria-label="Navegação principal">
+      <a href="home.html">Home</a>
+      <a class="active" href="servicos.html">Serviços</a>
+      <a href="index.html">Agendamento</a>
+    </nav>
+  </header>
 
-const servicosPadrao = [
-  { nome: "Corte de cabelo", preco: 30 },
-  { nome: "Barba", preco: 20 },
-  { nome: "Cabelo + Barba", preco: 45 },
-  { nome: "Sobrancelha", preco: 10 }
-];
+  <main class="services-main">
+    <section class="page-heading">
+      <span class="eyebrow">O QUE OFERECEMOS</span>
+      <h1>Nossos serviços</h1>
+      <p>Escolha o cuidado ideal para você. Confira abaixo os serviços e valores cadastrados.</p>
+    </section>
 
-function carregarServicosDaPagina() {
-  let servicos = servicosPadrao;
+    <section id="cardsServicos" class="services-grid" aria-live="polite">
+      <p class="empty-services">Carregando serviços...</p>
+    </section>
 
-  try {
-    const dadosSalvos = localStorage.getItem("leo_servicos");
-    if (dadosSalvos) {
-      const lista = JSON.parse(dadosSalvos);
-      if (Array.isArray(lista)) {
-        servicos = lista;
-      }
-    }
-  } catch (erro) {
-    console.error("Não foi possível carregar os serviços.", erro);
-  }
+    <section class="booking-banner">
+      <div>
+        <h2>Encontrou o que procura?</h2>
+        <p>Reserve agora o melhor horário para você.</p>
+      </div>
+      <a class="cta" href="index.html">Agendar agora</a>
+    </section>
+  </main>
 
-  areaServicos.innerHTML = "";
-
-  if (servicos.length === 0) {
-    areaServicos.innerHTML = '<p class="empty-services">Nenhum serviço cadastrado no momento.</p>';
-    return;
-  }
-
-  servicos.forEach(servico => {
-    const card = document.createElement("article");
-    card.className = "service-card";
-
-    const nome = document.createElement("h2");
-    nome.textContent = servico.nome;
-
-    const descricao = document.createElement("p");
-    descricao.textContent = "Cuidado e atenção para renovar seu visual.";
-
-    const preco = document.createElement("p");
-    preco.className = "price";
-    preco.textContent = "R$ " + Number(servico.preco).toFixed(2).replace(".", ",");
-
-    card.append(nome, descricao, preco);
-    areaServicos.appendChild(card);
-  });
-}
-
-carregarServicosDaPagina();
+  <footer class="site-footer">© 2026 Léo Barbas - Todos os direitos reservados</footer>
+</body>
+</html>
