@@ -1,15 +1,11 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>✂ BARBEIROS (teste) | Agendamento</title>
+    <title>✂ BARBEIROS (teste) | Home</title>
     <link rel="stylesheet" href="style.css">
-    <script src="script.js" defer></script>
-    </p>
 </head>
-
 <body>
 
     <header>
@@ -17,162 +13,77 @@
         <p>Seu estilo começa aqui!</p>
     </header>
 
-    <main class="container">
-
-        <section class="card" id="areaCliente">
-            <h2>Agende seu horário</h2>
-
-            <form id="formAgendamento">
-
-                <label>Nome completo</label>
-                <input type="text" id="nome" required placeholder="Digite seu nome">
-
-                <label>Telefone</label>
-                <input type="tel" id="telefone" required placeholder="(00) 00000-0000">
-
-                <label>Escolha o serviço</label>
-                <select id="servico" required></select>
-
-                <label>Escolha a data</label>
-                <input type="date" id="data" required>
-
-                <label>Escolha o horário</label>
-                <select id="horario" required>
-                    <option value="">Selecione uma data primeiro</option>
-                </select>
-
-                <p class="aviso" id="mensagem"></p>
-
-                <button type="submit" class="full">
-
-                    CONFIRMAR AGENDAMENTO
-                </button>
-
-            </form>
-        </section>
-            <section class="card hidden" id="areaAdmin">
-                <h2>Painel administrativo</h2>
-
-                <button id="btnVoltar">Voltar ao site</button>
-
-                <h3 class="subtitulo">Agendamentos</h3>
-                <div id="listaAgendamentos"></div>
-
-                <hr>
-
-                <h3>Cadastro de serviços</h3>
-
-                <label>Nome do serviço</label>
-                <input id="novoServico" placeholder="Ex: Corte degradê">
-
-                <label>Preço (R$)</label>
-                <input id="precoServico" type="number" min="0" step="0.01" placeholder="30">
-
-                <button id="btnCadastrarServico">Cadastrar serviço</button>
-
-                <div id="listaServicos"></div>
-            </section>
-
-    </main>
-
-    <footer>
-
-        © 2026 ✂ BARBEIROS (teste) - Todos os direitos reservados
-    </footer>
-
-</body>
-
-</html>
-
-
-<!DOCTYPE html>
-<html lang="pt-BR">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>✂ BARBEIROS (teste) | Agendamento</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="script.js" defer></script>
-</head>
-
-<body>
-
-    <header>
-        <h1>✂ BARBEIROS (teste)</h1>
-        <p>Seu estilo começa aqui!</p>
-    </header>
+    <nav class="menu">
+        <a href="index.html">Home</a>
+        <a href="servicos.html">Serviços</a>
+        <a href="agendamento.html">Agendamentos</a>
+    </nav>
 
     <main class="container">
 
-        <section class="card" id="areaCliente">
-            <h2>Agende seu horário</h2>
+        <section class="card">
+            <h2>Bem-vindo à nossa Barbearia</h2>
 
-            <form id="formAgendamento">
+            <p>
+                Oferecemos cortes modernos, barba profissional e atendimento de qualidade.
+                Nossa missão é proporcionar a melhor experiência para nossos clientes.
+            </p>
 
-                <label>Nome completo</label>
-                <input type="text" id="nome" required placeholder="Digite seu nome">
-
-                <label>Telefone</label>
-                <input type="tel" id="telefone" required placeholder="(00) 00000-0000">
-
-                <label>Escolha o serviço</label>
-                <select id="servico" required></select>
-
-                <label>Escolha a data</label>
-                <input type="date" id="data" required>
-
-                <label>Escolha o horário</label>
-                <select id="horario" required>
-                    <option value="">Selecione uma data primeiro</option>
-                </select>
-
-                <p class="aviso" id="mensagem"></p>
-
-                <button type="submit" class="full">
-
-                    CONFIRMAR AGENDAMENTO
-                </button>
-
-            </form>
+            <div style="text-align:center; margin-top:20px;">
+                <a href="agendamento.html" class="btn-voltar">
+                    Agendar Horário
+                </a>
+            </div>
         </section>
 
-        <p class="admin-link" id="linkAdmin">
+        <section class="card">
+            <h2>Destaques</h2>
 
-            Área do administrador
-        </p>
+            <div class="servico">
+                <h3>✂ Corte Masculino</h3>
+                <p>O corte ideal para o seu estilo.</p>
+            </div>
 
-        <section class="card hidden" id="areaAdmin">
-            <h2>Painel administrativo</h2>
+            <div class="servico">
+                <h3>🧔 Barba</h3>
+                <p>Modelagem e acabamento profissional.</p>
+            </div>
 
-            <button id="btnVoltar">Voltar ao site</button>
+            <div class="servico">
+                <h3>🔥 Corte + Barba</h3>
+                <p>Pacote completo com desconto.</p>
+            </div>
+        </section>
 
-            <h3 class="subtitulo">Agendamentos</h3>
-            <div id="listaAgendamentos"></div>
+        <section class="card">
+            <h2>Horário de Funcionamento</h2>
 
-            <hr>
+            <div class="servico">
+                <p><strong>Segunda a Sexta:</strong> 09h às 19h</p>
+            </div>
 
-            <h3>Cadastro de serviços</h3>
+            <div class="servico">
+                <p><strong>Sábado:</strong> 09h às 18h</p>
+            </div>
 
-            <label>Nome do serviço</label>
-            <input id="novoServico" placeholder="Ex: Corte degradê">
+            <div class="servico">
+                <p><strong>Domingo:</strong> Fechado</p>
+            </div>
+        </section>
 
-            <label>Preço (R$)</label>
-            <input id="precoServico" type="number" min="0" step="0.01" placeholder="30">
+        <section class="card">
+            <h2>Contato</h2>
 
-            <button id="btnCadastrarServico">Cadastrar serviço</button>
-
-            <div id="listaServicos"></div>
-
+            <p>📍 Rua Exemplo, 123 - São Paulo/SP</p>
+            <p>📞 (11) 99999-9999</p>
+            <p>📧 contato@barbeiros.com.br</p>
         </section>
 
     </main>
 
     <footer>
-
         © 2026 ✂ BARBEIROS (teste) - Todos os direitos reservados
     </footer>
 
 </body>
-
 </html>
