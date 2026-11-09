@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✂ BARBEIROS (teste) | Agendamento</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header>
+        <h1>✂ BARBEIROS (teste)</h1>
+        <p>Seu estilo começa aqui!</p>
+    </header>
+
+    <nav class="menu">
+        <a href="index.html">Home</a>
+        <a href="servicos.html">Serviços</a>
+        <a href="agendamentos.html">Agendamentos</a>
+    </nav>
+
+    <main class="container">
+
+        <section class="card">
+
+            <h2>Agende seu Horário</h2>
+
+            <form id="formAgendamento">
+
+                <label for="nome">Nome Completo</label>
+                <input
+                    type="text"
+                    id="nome"
+                    placeholder="Digite seu nome"
+                    required
+                >
+
+                <label for="telefone">Telefone</label>
+                <input
+                    type="tel"
+                    id="telefone"
+                    placeholder="(11) 99999-9999"
+                    required
+                >
+
+                <label for="servico">Serviço</label>
+                <select id="servico" required>
+                    <option value="">Selecione um serviço</option>
+                    <option>Corte Masculino</option>
+                    <option>Barba</option>
+                    <option>Corte + Barba</option>
+                    <option>Degradê</option>
+                    <option>Sobrancelha</option>
+                </select>
+
+                <label for="data">Data</label>
+                <input
+                    type="date"
+                    id="data"
+                    required
+                >
+
+                <label for="horario">Horário</label>
+                <select id="horario" required>
+                    <option value="">Selecione um horário</option>
+                    <option>09:00</option>
+                    <option>10:00</option>
+                    <option>11:00</option>
+                    <option>13:00</option>
+                    <option>14:00</option>
+                    <option>15:00</option>
+                    <option>16:00</option>
+                    <option>17:00</option>
+                    <option>18:00</option>
+                </select>
+
+                <button type="submit" class="full">
+                    CONFIRMAR AGENDAMENTO
+                </button>
+
+            </form>
+
+            <p id="mensagem" class="aviso"></p>
+
+        </section>
+
+    </main>
+
+    <footer>
+        © 2026 ✂ BARBEIROS (teste) - Todos os direitos reservados
+    </footer>
+
+    <script>
+        const formulario = document.getElementById("formAgendamento");
+
+        formulario.addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            const nome = document.getElementById("nome").value;
+            const servico = document.getElementById("servico").value;
+            const data = document.getElementById("data").value;
+            const horario = document.getElementById("horario").value;
+
+            document.getElementById("mensagem").innerHTML =
+                `✅ Agendamento confirmado!<br>
+                Cliente: ${nome}<br>
+                Serviço: ${servico}<br>
+                Data: ${data}<br>
+                Horário: ${horario}`;
+        });
+    </script>
+
+</body>
+</html>
