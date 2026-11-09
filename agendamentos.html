@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -29,20 +30,10 @@
             <form id="formAgendamento">
 
                 <label for="nome">Nome Completo</label>
-                <input
-                    type="text"
-                    id="nome"
-                    placeholder="Digite seu nome"
-                    required
-                >
+                <input type="text" id="nome" placeholder="Digite seu nome" required>
 
                 <label for="telefone">Telefone</label>
-                <input
-                    type="tel"
-                    id="telefone"
-                    placeholder="(11) 99999-9999"
-                    required
-                >
+                <input type="tel" id="telefone" placeholder="(11) 99999-9999" required>
 
                 <label for="servico">Serviço</label>
                 <select id="servico" required>
@@ -55,11 +46,7 @@
                 </select>
 
                 <label for="data">Data</label>
-                <input
-                    type="date"
-                    id="data"
-                    required
-                >
+                <input type="date" id="data" required>
 
                 <label for="horario">Horário</label>
                 <select id="horario" required>
@@ -88,13 +75,21 @@
     </main>
 
     <footer>
-        © 2026 ✂ BARBEIROS (teste) - Todos os direitos reservados
+        <h3>Contato</h3>
+
+        <p>📍 Rua Exemplo, 123 - São Paulo/SP</p>
+        <p>📞 (11) 99999-9999</p>
+        <p>📧 contato@barbeiros.com.br</p>
+
+        <br>
+
+        <p>© 2026 ✂ BARBEIROS (teste) - Todos os direitos reservados</p>
     </footer>
 
     <script>
         const formulario = document.getElementById("formAgendamento");
 
-        formulario.addEventListener("submit", function(event) {
+        formulario.addEventListener("submit", function (event) {
             event.preventDefault();
 
             const nome = document.getElementById("nome").value;
@@ -112,4 +107,5 @@
     </script>
 
 </body>
+
 </html>
