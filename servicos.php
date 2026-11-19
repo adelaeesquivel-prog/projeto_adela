@@ -9,15 +9,10 @@
   <script src="servicos.js" defer></script>
 </head>
 <body>
-  <header class="site-header">
-    <a class="logo" href="home.html">✂ LÉO BARBAS</a>
-    <p>Seu estilo começa aqui!</p>
-    <nav class="site-nav" aria-label="Navegação principal">
-      <a href="home.html">Home</a>
-      <a class="active" href="servicos.html">Serviços</a>
-      <a href="agenda.html">Agendamento</a>
-    </nav>
-  </header>
+  <?php
+  $paginaAtual = 'servicos';
+  require __DIR__ . '/header.php';
+  ?>
 
   <main class="services-main">
     <section class="page-heading">
@@ -35,10 +30,10 @@
         <h2>Encontrou o que procura?</h2>
         <p>Reserve agora o melhor horário para você.</p>
       </div>
-      <a class="cta" href="index.html">Agendar agora</a>
+      <a class="cta" href="agenda.php">Agendar agora</a>
     </section>
   </main>
 
-  <footer class="site-footer">© 2026 Léo Barbas - Todos os direitos reservados</footer>
+  <?php require __DIR__ . '/footer.php'; ?>
 </body>
 </html>

@@ -8,15 +8,10 @@
   <link rel="stylesheet" href="site-pages.css">
 </head>
 <body>
-  <header class="site-header">
-    <a class="logo" href="home.html">✂ LÉO BARBAS</a>
-    <p>Seu estilo começa aqui!</p>
-    <nav class="site-nav" aria-label="Navegação principal">
-      <a class="active" href="home.html">Home</a>
-      <a href="servicos.html">Serviços</a>
-      <a href="index.html">Agendamento</a>
-    </nav>
-  </header>
+  <?php
+  $paginaAtual = 'home';
+  require __DIR__ . '/header.php';
+  ?>
 
   <main>
     <section class="hero">
@@ -24,8 +19,8 @@
         <span class="eyebrow">BARBEARIA • ESTILO • PERSONALIDADE</span>
         <h1>Seu visual em boas mãos.</h1>
         <p>Um bom corte faz a diferença. Venha cuidar do seu estilo com a equipe Léo Barbas.</p>
-        <a class="cta" href="agenda.html">Agende seu horário</a>
-        <a class="secondary-link" href="servicos.html">Conheça nossos serviços</a>
+        <a class="cta" href="agenda.php">Agende seu horário</a>
+        <a class="secondary-link" href="servicos.php">Conheça nossos serviços</a>
       </div>
     </section>
 
@@ -57,10 +52,10 @@
         <h2>Pronto para renovar o visual?</h2>
         <p>Escolha seu serviço e reserve seu horário.</p>
       </div>
-      <a class="cta" href="agenda.html">Fazer agendamento</a>
+      <a class="cta" href="agenda.php">Fazer agendamento</a>
     </section>
   </main>
 
-  <footer class="site-footer">© 2026 Léo Barbas - Todos os direitos reservados</footer>
+  <?php require __DIR__ . '/footer.php'; ?>
 </body>
 </html>
