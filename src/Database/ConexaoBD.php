@@ -1,5 +1,8 @@
 
 <?php
+use PDO;
+use PDOException;
+use Exception;
 final class ConexaoBD
 {
 
