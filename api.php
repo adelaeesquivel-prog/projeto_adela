@@ -1,11 +1,24 @@
 <?php
 declare(strict_types=1);
 
-session_start([
-    'cookie_httponly' => true,
-    'cookie_samesite' => 'Lax',
-    'use_strict_mode' => true,
-]);
+require_once __DIR__ . "/vendor/autoload.php";
+
+use LeoBarbas\Auth\Auth;
+use LeoBarbas\Models\Agendamento;
+use LeoBarbas\Models\Cliente;
+use LeoBarbas\Models\Servico;
+use LeoBarbas\Services\AdministradorService;
+use LeoBarbas\Services\AgendamentoService;
+use LeoBarbas\Services\ClienteService;
+use LeoBarbas\Services\ServicoService;
+
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start([
+        'cookie_httponly' => true,
+        'cookie_samesite' => 'Lax',
+        'use_strict_mode' => true,
+    ]);
+}
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -34,68 +47,9 @@ function lerCorpo(): array
     return $dados;
 }
 
-function caminhoDados(): string
+function exigirAdminApi(): void
 {
-    $diretorio = getenv('LEO_DATA_DIR');
-    if ($diretorio === false || $diretorio === '') {
-        $diretorio = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'projeto_adela_dados';
-    }
-
-    if (!is_dir($diretorio) && !mkdir($diretorio, 0700, true) && !is_dir($diretorio)) {
-        responder(['erro' => 'Não foi possível criar a pasta de dados do site.'], 500);
-    }
-
-    return $diretorio . DIRECTORY_SEPARATOR . 'dados.json';
-}
-
-function dadosPadrao(): array
-{
-    return [
-        'servicos' => [
-            ['id' => 'corte-cabelo', 'nome' => 'Corte de cabelo', 'preco' => 30],
-            ['id' => 'barba', 'nome' => 'Barba', 'preco' => 20],
-            ['id' => 'cabelo-barba', 'nome' => 'Cabelo + Barba', 'preco' => 45],
-            ['id' => 'sobrancelha', 'nome' => 'Sobrancelha', 'preco' => 10],
-        ],
-        'agendamentos' => [],
-        'usuarios' => [],
-    ];
-}
-
-function lerDados(): array
-{
-    $arquivo = caminhoDados();
-    if (!is_file($arquivo)) {
-        return dadosPadrao();
-    }
-
-    $dados = json_decode((string) file_get_contents($arquivo), true);
-    if (
-        !is_array($dados)
-        || !isset($dados['servicos'], $dados['agendamentos'])
-        || !is_array($dados['servicos'])
-        || !is_array($dados['agendamentos'])
-    ) {
-        responder(['erro' => 'O arquivo de dados do site está inválido.'], 500);
-    }
-    if (!isset($dados['usuarios']) || !is_array($dados['usuarios'])) {
-        $dados['usuarios'] = [];
-    }
-
-    return $dados;
-}
-
-function gravarDados(array $dados): void
-{
-    $json = json_encode($dados, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-    if ($json === false || file_put_contents(caminhoDados(), $json, LOCK_EX) === false) {
-        responder(['erro' => 'Não foi possível salvar os dados. Verifique a permissão da pasta de dados.'], 500);
-    }
-}
-
-function exigirAdmin(): void
-{
-    if (empty($_SESSION['admin'])) {
+    if (!Auth::usuarioEhAdmin()) {
         responder(['erro' => 'Faça login como administrador para continuar.'], 401);
     }
 }
@@ -106,258 +60,282 @@ function validarData(string $data): bool
     return $dataFormatada !== false && $dataFormatada->format('Y-m-d') === $data;
 }
 
-$bloqueio = fopen(caminhoDados() . '.lock', 'c');
-if ($bloqueio === false || !flock($bloqueio, LOCK_EX)) {
-    responder(['erro' => 'Não foi possível acessar a pasta de dados.'], 500);
-}
+$servicoService = new ServicoService();
+$agendamentoService = new AgendamentoService();
+$clienteService = new ClienteService();
+$adminService = new AdministradorService();
 
 $metodo = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $acao = $_GET['acao'] ?? '';
 
-if ($metodo === 'GET') {
-    $dados = lerDados();
-    if ($acao === 'servicos') {
-        responder(['servicos' => $dados['servicos']]);
-    }
-
-    if ($acao === 'disponibilidade') {
-        $data = (string) ($_GET['data'] ?? '');
-        if (!validarData($data)) {
-            responder(['erro' => 'Escolha uma data válida.'], 400);
+try {
+    if ($metodo === 'GET') {
+        if ($acao === 'servicos') {
+            responder(['servicos' => $servicoService->listarTodos()]);
         }
 
-        $ocupados = [];
-        foreach ($dados['agendamentos'] as $agendamento) {
-            if (($agendamento['data'] ?? '') === $data) {
-                $ocupados[] = $agendamento['horario'];
+        if ($acao === 'disponibilidade') {
+            $data = (string) ($_GET['data'] ?? '');
+            if (!validarData($data)) {
+                responder(['erro' => 'Escolha uma data válida.'], 400);
             }
-        }
-        responder(['ocupados' => $ocupados, 'horarios' => HORARIOS]);
-    }
 
-    if ($acao === 'admin') {
-        responder(['autenticado' => !empty($_SESSION['admin'])]);
-    }
-
-    if ($acao === 'conta') {
-        if (!empty($_SESSION['admin'])) {
-            responder(['autenticado' => true, 'tipo' => 'admin', 'nome' => 'Administrador']);
+            $ocupados = [];
+            foreach ($agendamentoService->listarTodos() as $agendamento) {
+                if (($agendamento['data'] ?? '') === $data && ($agendamento['status'] ?? '') !== 'cancelado') {
+                    $ocupados[] = substr((string) $agendamento['horario'], 0, 5);
+                }
+            }
+            responder(['ocupados' => $ocupados, 'horarios' => HORARIOS]);
         }
-        if (!empty($_SESSION['cliente_id'])) {
-            $dados = lerDados();
-            foreach ($dados['usuarios'] as $usuario) {
-                if (($usuario['id'] ?? '') === $_SESSION['cliente_id']) {
+
+        if ($acao === 'admin') {
+            responder(['autenticado' => Auth::usuarioEhAdmin()]);
+        }
+
+        if ($acao === 'conta') {
+            if (Auth::usuarioEhAdmin()) {
+                responder([
+                    'autenticado' => true,
+                    'tipo' => 'admin',
+                    'nome' => $_SESSION['nome'] ?? 'Administrador',
+                ]);
+            }
+
+            if (Auth::usuarioEhCliente() && !empty($_SESSION['id'])) {
+                $cliente = $clienteService->buscarPorId((int) $_SESSION['id']);
+                if ($cliente !== null) {
                     responder([
                         'autenticado' => true,
                         'tipo' => 'cliente',
-                        'nome' => $usuario['nome'],
-                        'email' => $usuario['email'],
-                        'telefone' => $usuario['telefone'],
+                        'nome' => $cliente['nome'],
+                        'email' => $cliente['email'],
+                        'telefone' => $cliente['telefone'],
                     ]);
                 }
             }
-            unset($_SESSION['cliente_id']);
+
+            responder(['autenticado' => false]);
         }
+
+        if ($acao === 'agendamentos') {
+            exigirAdminApi();
+            responder(['agendamentos' => $agendamentoService->listarTodos()]);
+        }
+
+        responder(['erro' => 'Ação não encontrada.'], 404);
+    }
+
+    if ($metodo !== 'POST') {
+        header('Allow: GET, POST');
+        responder(['erro' => 'Método não permitido.'], 405);
+    }
+
+    $entrada = lerCorpo();
+    $acao = (string) ($entrada['acao'] ?? '');
+
+    if ($acao === 'login') {
+        $tipo = (string) ($entrada['tipo'] ?? 'admin');
+        $senha = $entrada['senha'] ?? null;
+
+        if (!is_string($senha)) {
+            responder(['erro' => 'Senha incorreta.'], 401);
+        }
+
+        if ($tipo === 'admin') {
+            $email = mb_strtolower(trim((string) ($entrada['email'] ?? '')));
+            if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                responder(['erro' => 'Informe um e-mail válido.'], 400);
+            }
+
+            $admin = $adminService->buscarPorEmail($email);
+            if ($admin === null || !password_verify($senha, $admin['senha'])) {
+                responder(['erro' => 'E-mail ou senha incorretos.'], 401);
+            }
+
+            session_regenerate_id(true);
+            Auth::login((int) $admin['id'], (string) $admin['nome'], 'admin');
+            responder(['autenticado' => true, 'tipo' => 'admin', 'nome' => $admin['nome']]);
+        }
+
+        if ($tipo === 'cliente') {
+            $email = mb_strtolower(trim((string) ($entrada['email'] ?? '')));
+            if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                responder(['erro' => 'Informe um e-mail válido.'], 400);
+            }
+
+            $cliente = $clienteService->buscarPorEmail($email);
+            if ($cliente === null || !password_verify($senha, $cliente['senha'])) {
+                responder(['erro' => 'E-mail ou senha incorretos.'], 401);
+            }
+
+            session_regenerate_id(true);
+            Auth::login((int) $cliente['id'], (string) $cliente['nome'], 'cliente');
+            responder(['autenticado' => true, 'tipo' => 'cliente', 'nome' => $cliente['nome']]);
+        }
+
+        responder(['erro' => 'Tipo de login inválido.'], 400);
+    }
+
+    if ($acao === 'logout') {
+        $_SESSION = [];
+        session_regenerate_id(true);
+        session_destroy();
         responder(['autenticado' => false]);
     }
 
-    if ($acao === 'agendamentos') {
-        exigirAdmin();
-        responder(['agendamentos' => $dados['agendamentos']]);
+    if ($acao === 'registrar') {
+        $nome = trim((string) ($entrada['nome'] ?? ''));
+        $email = mb_strtolower(trim((string) ($entrada['email'] ?? '')));
+        $telefone = trim((string) ($entrada['telefone'] ?? ''));
+        $senha = $entrada['senha'] ?? null;
+
+        if ($nome === '' || mb_strlen($nome) > 120) {
+            responder(['erro' => 'Informe um nome válido.'], 400);
+        }
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            responder(['erro' => 'Informe um e-mail válido.'], 400);
+        }
+        if (mb_strlen($telefone) < 8 || mb_strlen($telefone) > 30) {
+            responder(['erro' => 'Informe um telefone válido.'], 400);
+        }
+        if (!is_string($senha) || mb_strlen($senha) < 6 || mb_strlen($senha) > 100) {
+            responder(['erro' => 'A senha deve ter entre 6 e 100 caracteres.'], 400);
+        }
+
+        if ($clienteService->buscarPorEmail($email) !== null) {
+            responder(['erro' => 'Já existe uma conta com este e-mail.'], 409);
+        }
+
+        $cliente = new Cliente(
+            $nome,
+            $email,
+            password_hash($senha, PASSWORD_DEFAULT),
+            $telefone
+        );
+        $clienteService->inserir($cliente);
+
+        $clienteCriado = $clienteService->buscarPorEmail($email);
+        session_regenerate_id(true);
+        if ($clienteCriado !== null) {
+            Auth::login((int) $clienteCriado['id'], (string) $clienteCriado['nome'], 'cliente');
+        }
+
+        responder(['autenticado' => true, 'tipo' => 'cliente', 'nome' => $nome]);
+    }
+
+    if ($acao === 'agendar') {
+        $nome = trim((string) ($entrada['nome'] ?? ''));
+        $telefone = trim((string) ($entrada['telefone'] ?? ''));
+        $servicoId = (int) ($entrada['servico_id'] ?? 0);
+        $data = (string) ($entrada['data'] ?? '');
+        $horario = (string) ($entrada['horario'] ?? '');
+        $observacao = isset($entrada['observacao']) ? trim((string) $entrada['observacao']) : null;
+
+        if ($nome === '' || mb_strlen($nome) > 120 || mb_strlen($telefone) < 8 || mb_strlen($telefone) > 30) {
+            responder(['erro' => 'Informe seu nome e um telefone válido.'], 400);
+        }
+        if ($servicoId <= 0 || !validarData($data) || $data < date('Y-m-d') || !in_array($horario, HORARIOS, true)) {
+            responder(['erro' => 'Escolha uma data e um horário válidos.'], 400);
+        }
+        if ($data === date('Y-m-d') && $horario <= date('H:i')) {
+            responder(['erro' => 'Esse horário já passou. Escolha outro horário.'], 400);
+        }
+
+        $servico = $servicoService->buscarPorId($servicoId);
+        if ($servico === null) {
+            responder(['erro' => 'O serviço selecionado não está mais disponível. Atualize a página.'], 400);
+        }
+
+        foreach ($agendamentoService->listarTodos() as $item) {
+            $horarioItem = substr((string) ($item['horario'] ?? ''), 0, 5);
+            if (($item['data'] ?? '') === $data && $horarioItem === $horario && ($item['status'] ?? '') !== 'cancelado') {
+                responder(['erro' => 'Esse horário acabou de ser reservado. Escolha outro.'], 409);
+            }
+        }
+
+        // Resolve cliente_id: usa o cliente logado ou vincula/cria pelo telefone/e-mail se necessário
+        $clienteId = null;
+        if (Auth::usuarioEhCliente() && !empty($_SESSION['id'])) {
+            $clienteId = (int) $_SESSION['id'];
+        } else {
+            $emailCliente = mb_strtolower(trim((string) ($entrada['email'] ?? '')));
+            if ($emailCliente !== '' && filter_var($emailCliente, FILTER_VALIDATE_EMAIL)) {
+                $existente = $clienteService->buscarPorEmail($emailCliente);
+                if ($existente !== null) {
+                    $clienteId = (int) $existente['id'];
+                }
+            }
+        }
+
+        if ($clienteId === null) {
+            // Se não houver cliente cadastrado com e-mail, cria um registro básico para satisfazer a FK cliente_id
+            $emailGerado = 'cliente_' . bin2hex(random_bytes(5)) . '@local.invalid';
+            $senhaAleatoria = password_hash(bin2hex(random_bytes(12)), PASSWORD_DEFAULT);
+            $clienteService->inserir(new Cliente($nome, $emailGerado, $senhaAleatoria, $telefone));
+            $novoCliente = $clienteService->buscarPorEmail($emailGerado);
+            $clienteId = $novoCliente !== null ? (int) $novoCliente['id'] : 0;
+        }
+
+        $agendamento = new Agendamento(
+            $data,
+            $horario . ':00',
+            $clienteId,
+            $servicoId,
+            'pendente',
+            $observacao !== '' ? $observacao : null
+        );
+        $agendamentoService->inserir($agendamento);
+
+        responder(['mensagem' => 'Agendamento realizado com sucesso.']);
+    }
+
+    exigirAdminApi();
+
+    if ($acao === 'cancelar') {
+        $id = (int) ($entrada['id'] ?? 0);
+        if ($id <= 0 || $agendamentoService->buscarPorId($id) === null) {
+            responder(['erro' => 'Agendamento não encontrado.'], 404);
+        }
+
+        $agendamentoService->excluir($id);
+        responder(['agendamentos' => $agendamentoService->listarTodos()]);
+    }
+
+    if ($acao === 'adicionar_servico') {
+        $nome = trim((string) ($entrada['nome'] ?? ''));
+        $preco = $entrada['preco'] ?? null;
+        $duracao = trim((string) ($entrada['duracao'] ?? '30 min'));
+        $descricao = isset($entrada['descricao']) && trim((string) $entrada['descricao']) !== ''
+            ? trim((string) $entrada['descricao'])
+            : null;
+
+        if ($nome === '' || mb_strlen($nome) > 80 || !is_numeric($preco) || (float) $preco < 0) {
+            responder(['erro' => 'Informe um nome e um preço válido para o serviço.'], 400);
+        }
+
+        $servico = new Servico(
+            $nome,
+            round((float) $preco, 2),
+            $duracao !== '' ? $duracao : '30 min',
+            $descricao
+        );
+        $servicoService->inserir($servico);
+
+        responder(['servicos' => $servicoService->listarTodos()]);
+    }
+
+    if ($acao === 'excluir_servico') {
+        $id = (int) ($entrada['id'] ?? 0);
+        if ($id <= 0 || $servicoService->buscarPorId($id) === null) {
+            responder(['erro' => 'Serviço não encontrado.'], 404);
+        }
+
+        $servicoService->excluir($id);
+        responder(['servicos' => $servicoService->listarTodos()]);
     }
 
     responder(['erro' => 'Ação não encontrada.'], 404);
+} catch (Throwable $e) {
+    responder(['erro' => $e->getMessage() ?: 'Erro interno no servidor.'], 500);
 }
-
-if ($metodo !== 'POST') {
-    header('Allow: GET, POST');
-    responder(['erro' => 'Método não permitido.'], 405);
-}
-
-$entrada = lerCorpo();
-$acao = (string) ($entrada['acao'] ?? '');
-
-if ($acao === 'login') {
-    $tipo = (string) ($entrada['tipo'] ?? 'admin');
-    $senha = $entrada['senha'] ?? null;
-
-    if (!is_string($senha)) {
-        responder(['erro' => 'Senha incorreta.'], 401);
-    }
-    if ($tipo === 'admin') {
-        $senhaAdmin = getenv('LEO_ADMIN_PASSWORD');
-        if ($senhaAdmin === false || $senhaAdmin === '') {
-            responder(['erro' => 'Configure a variável LEO_ADMIN_PASSWORD para habilitar o painel.'], 503);
-        }
-        if (!hash_equals($senhaAdmin, $senha)) {
-            responder(['erro' => 'Senha incorreta.'], 401);
-        }
-        unset($_SESSION['cliente_id']);
-        session_regenerate_id(true);
-        $_SESSION['admin'] = true;
-        responder(['autenticado' => true, 'tipo' => 'admin']);
-    }
-
-    if ($tipo === 'cliente') {
-        $email = mb_strtolower(trim((string) ($entrada['email'] ?? '')));
-        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            responder(['erro' => 'Informe um e-mail válido.'], 400);
-        }
-        $dados = lerDados();
-        foreach ($dados['usuarios'] as $usuario) {
-            if (($usuario['email'] ?? '') === $email && password_verify($senha, $usuario['senha'])) {
-                unset($_SESSION['admin']);
-                session_regenerate_id(true);
-                $_SESSION['cliente_id'] = $usuario['id'];
-                responder(['autenticado' => true, 'tipo' => 'cliente', 'nome' => $usuario['nome']]);
-            }
-        }
-        responder(['erro' => 'E-mail ou senha incorretos.'], 401);
-    }
-
-    responder(['erro' => 'Tipo de login inválido.'], 400);
-}
-
-if ($acao === 'logout') {
-    $_SESSION = [];
-    session_regenerate_id(true);
-    responder(['autenticado' => false]);
-}
-
-if ($acao === 'registrar') {
-    $nome = trim((string) ($entrada['nome'] ?? ''));
-    $email = mb_strtolower(trim((string) ($entrada['email'] ?? '')));
-    $telefone = trim((string) ($entrada['telefone'] ?? ''));
-    $senha = $entrada['senha'] ?? null;
-
-    if ($nome === '' || mb_strlen($nome) > 120) {
-        responder(['erro' => 'Informe um nome válido.'], 400);
-    }
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        responder(['erro' => 'Informe um e-mail válido.'], 400);
-    }
-    if (mb_strlen($telefone) < 8 || mb_strlen($telefone) > 30) {
-        responder(['erro' => 'Informe um telefone válido.'], 400);
-    }
-    if (!is_string($senha) || mb_strlen($senha) < 6 || mb_strlen($senha) > 100) {
-        responder(['erro' => 'A senha deve ter entre 6 e 100 caracteres.'], 400);
-    }
-
-    $dados = lerDados();
-    foreach ($dados['usuarios'] as $usuario) {
-        if (($usuario['email'] ?? '') === $email) {
-            responder(['erro' => 'Já existe uma conta com este e-mail.'], 409);
-        }
-    }
-
-    $usuario = [
-        'id' => bin2hex(random_bytes(8)),
-        'nome' => $nome,
-        'email' => $email,
-        'telefone' => $telefone,
-        'senha' => password_hash($senha, PASSWORD_DEFAULT),
-    ];
-    $dados['usuarios'][] = $usuario;
-    gravarDados($dados);
-
-    session_regenerate_id(true);
-    $_SESSION['cliente_id'] = $usuario['id'];
-    unset($_SESSION['admin']);
-    responder(['autenticado' => true, 'tipo' => 'cliente', 'nome' => $usuario['nome']]);
-}
-
-if ($acao === 'agendar') {
-    $nome = trim((string) ($entrada['nome'] ?? ''));
-    $telefone = trim((string) ($entrada['telefone'] ?? ''));
-    $servicoId = (string) ($entrada['servico_id'] ?? '');
-    $data = (string) ($entrada['data'] ?? '');
-    $horario = (string) ($entrada['horario'] ?? '');
-
-    if ($nome === '' || mb_strlen($nome) > 120 || mb_strlen($telefone) < 8 || mb_strlen($telefone) > 30) {
-        responder(['erro' => 'Informe seu nome e um telefone válido.'], 400);
-    }
-    if (!validarData($data) || $data < date('Y-m-d') || !in_array($horario, HORARIOS, true)) {
-        responder(['erro' => 'Escolha uma data e um horário válidos.'], 400);
-    }
-    if ($data === date('Y-m-d') && $horario <= date('H:i')) {
-        responder(['erro' => 'Esse horário já passou. Escolha outro horário.'], 400);
-    }
-
-    $dados = lerDados();
-    $servico = null;
-    foreach ($dados['servicos'] as $item) {
-        if (($item['id'] ?? '') === $servicoId) {
-            $servico = $item;
-            break;
-        }
-    }
-    if ($servico === null) {
-        responder(['erro' => 'O serviço selecionado não está mais disponível. Atualize a página.'], 400);
-    }
-    foreach ($dados['agendamentos'] as $item) {
-        if ($item['data'] === $data && $item['horario'] === $horario) {
-            responder(['erro' => 'Esse horário acabou de ser reservado. Escolha outro.'], 409);
-        }
-    }
-
-    $dados['agendamentos'][] = [
-        'id' => bin2hex(random_bytes(8)),
-        'nome' => $nome,
-        'telefone' => $telefone,
-        'servico' => $servico['nome'],
-        'preco' => (float) $servico['preco'],
-        'data' => $data,
-        'horario' => $horario,
-    ];
-    gravarDados($dados);
-    responder(['mensagem' => 'Agendamento realizado com sucesso.']);
-}
-
-exigirAdmin();
-$dados = lerDados();
-
-if ($acao === 'cancelar') {
-    $id = (string) ($entrada['id'] ?? '');
-    $quantidadeAnterior = count($dados['agendamentos']);
-    $dados['agendamentos'] = array_values(array_filter(
-        $dados['agendamentos'],
-        static fn (array $item): bool => ($item['id'] ?? '') !== $id
-    ));
-    if (count($dados['agendamentos']) === $quantidadeAnterior) {
-        responder(['erro' => 'Agendamento não encontrado.'], 404);
-    }
-    gravarDados($dados);
-    responder(['agendamentos' => $dados['agendamentos']]);
-}
-
-if ($acao === 'adicionar_servico') {
-    $nome = trim((string) ($entrada['nome'] ?? ''));
-    $preco = $entrada['preco'] ?? null;
-    if ($nome === '' || mb_strlen($nome) > 80 || !is_numeric($preco) || (float) $preco < 0) {
-        responder(['erro' => 'Informe um nome e um preço válido para o serviço.'], 400);
-    }
-
-    $dados['servicos'][] = [
-        'id' => bin2hex(random_bytes(8)),
-        'nome' => $nome,
-        'preco' => round((float) $preco, 2),
-    ];
-    gravarDados($dados);
-    responder(['servicos' => $dados['servicos']]);
-}
-
-if ($acao === 'excluir_servico') {
-    $id = (string) ($entrada['id'] ?? '');
-    $quantidadeAnterior = count($dados['servicos']);
-    $dados['servicos'] = array_values(array_filter(
-        $dados['servicos'],
-        static fn (array $item): bool => ($item['id'] ?? '') !== $id
-    ));
-    if (count($dados['servicos']) === $quantidadeAnterior) {
-        responder(['erro' => 'Serviço não encontrado.'], 404);
-    }
-    gravarDados($dados);
-    responder(['servicos' => $dados['servicos']]);
-}
-
-responder(['erro' => 'Ação não encontrada.'], 404);
