@@ -1,11 +1,12 @@
-
 <?php
+namespace LeoBarbas\Database;
+
 use PDO;
 use PDOException;
 use Exception;
+
 final class ConexaoBD
 {
-
     private function __construct() {}
 
     private static PDO $conexao;
@@ -26,16 +27,13 @@ final class ConexaoBD
 
                 self::$conexao->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
                 self::$conexao->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-
-              
             } catch (PDOException $e) {
-
                 throw new Exception(
                     "Erro ao conectar ao banco de dados. Contate o suporte.",
-                    0, // Código de erro genérico que não revela detalhes sensíveis
-                    $e // Exceção original como causa
+                    0,
+                    $e
                 );
-            } 
+            }
         }
 
         return self::$conexao;
