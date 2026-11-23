@@ -9,10 +9,7 @@
     <script src="script.js" defer></script>
 </head>
 <body>
-  <?php
-  $paginaAtual = 'agenda';
-  require __DIR__ . '/header.php';
-  ?>
+   <?php require __DIR__ . '/includes/header.php'; ?>
 
   <main class="container">
     <section class="card" id="areaCliente">
@@ -62,9 +59,6 @@
     </section>
   </main>
 
-  <?php
-  $classeRodape = '';
-  require __DIR__ . '/footer.php';
-  ?>
+  <?php require __DIR__ . '/includes/footer.php'; ?>
 </body>
 </html>
