@@ -1,3 +1,4 @@
+<?php $paginaAtual = 'agenda'; ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -7,6 +8,7 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="site-pages.css">
     <script src="script.js" defer></script>
+    <script src="account.js" defer></script>
 </head>
 <body>
    <?php require __DIR__ . '/includes/header.php'; ?>
