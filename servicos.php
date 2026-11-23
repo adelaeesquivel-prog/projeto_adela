@@ -1,3 +1,4 @@
+<?php $paginaAtual = 'servicos'; ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -7,12 +8,10 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="site-pages.css">
   <script src="servicos.js" defer></script>
+  <script src="account.js" defer></script>
 </head>
 <body>
-  <?php
-  $paginaAtual = 'servicos';
-  require __DIR__ . '/header.php';
-  ?>
+  <?php require __DIR__ . '/includes/header.php'; ?>
 
   <main class="services-main">
     <section class="page-heading">
@@ -34,6 +33,6 @@
     </section>
   </main>
 
-  <?php require __DIR__ . '/footer.php'; ?>
+    <?php require __DIR__ . '/includes/footer.php'; ?>
 </body>
 </html>

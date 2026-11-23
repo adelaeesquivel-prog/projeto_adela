@@ -1,3 +1,4 @@
+<?php $paginaAtual = 'home'; ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -6,12 +7,10 @@
   <title>Léo Barbas | Início</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="site-pages.css">
+  <script src="account.js" defer></script>
 </head>
 <body>
-  <?php
-  $paginaAtual = 'home';
-  require __DIR__ . '/header.php';
-  ?>
+   <?php require __DIR__ . '/includes/header.php'; ?>
 
   <main>
     <section class="hero">
@@ -56,6 +55,6 @@
     </section>
   </main>
 
-  <?php require __DIR__ . '/footer.php'; ?>
+  <?php require __DIR__ . '/includes/footer.php'; ?>
 </body>
 </html>

@@ -1,3 +1,11 @@
+ <?php
+
+
+
+$paginaAtual = 'index';
+    ?>
+
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>

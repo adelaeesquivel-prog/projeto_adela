@@ -269,6 +269,9 @@ async function inicializar() {
   try {
     await carregarServicos();
     await carregarHorarios();
+    if (new URLSearchParams(window.location.search).get("admin") === "1") {
+      await abrirAdmin();
+    }
   } catch (erro) {
     mostrarMensagem(erro.message);
   }
