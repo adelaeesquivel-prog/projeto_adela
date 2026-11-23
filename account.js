@@ -163,18 +163,22 @@ async function atualizarConta() {
   if (!loginIcon) return;
   try {
     const conta = await requisicaoConta("conta", null, "GET");
+    const rotulo = loginIcon.querySelector(".login-label");
     loginIcon.classList.toggle("logged", conta.autenticado);
-    loginIcon.title = conta.autenticado ? `Conta: ${conta.nome}` : "Entrar ou criar conta";
+    loginIcon.title = conta.autenticado ? `Conta: ${conta.nome}` : "Registrar ou entrar";
     loginIcon.dataset.logado = conta.autenticado ? "true" : "false";
+    if (rotulo) rotulo.textContent = conta.autenticado ? conta.nome : "Registrar";
     loginIcon.onclick = conta.autenticado
       ? () => mostrarContaLogada(conta)
-      : () => mostrarFormulario("entrar");
+      : () => mostrarFormulario("cadastrar");
   } catch (erro) {
-    loginIcon.onclick = () => mostrarFormulario("entrar");
+    const rotulo = loginIcon.querySelector(".login-label");
+    if (rotulo) rotulo.textContent = "Registrar";
+    loginIcon.onclick = () => mostrarFormulario("cadastrar");
   }
 }
 
 if (loginIcon) {
-  loginIcon.onclick = () => mostrarFormulario("entrar");
+  loginIcon.onclick = () => mostrarFormulario("cadastrar");
   atualizarConta();
 }

@@ -8,24 +8,44 @@
   border-bottom: 3px solid #c69b45;
   position: relative;
 }
+.site-header-top {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.site-brand {
+  grid-column: 2;
+}
 .login-icon {
-  position: absolute;
-  top: 18px;
-  right: 24px;
-  width: 44px;
-  height: 44px;
+  justify-self: start;
+  min-width: 148px;
+  max-width: 100%;
+  height: 46px;
+  margin: 0;
   border: 1px solid #c69b45;
-  border-radius: 50%;
+  border-radius: 8px;
   background: #202020;
   color: #d6aa53;
-  display: grid;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   cursor: pointer;
-  margin: 0;
-  padding: 9px;
+  padding: 8px 14px;
 }
-.login-icon:hover { background: #c69b45; color: #111; }
+.login-icon:hover { background: #c69b45; color: #111; transform: translateY(-1px); }
+.login-icon:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
 .login-icon svg { width: 24px; height: 24px; fill: currentColor; }
+.login-label {
+  max-width: 95px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: bold;
+}
 .account-overlay {
   position: fixed;
   inset: 0;
@@ -95,8 +115,10 @@
 .site-nav {
   display: flex;
   justify-content: center;
+  align-items: center;
   flex-wrap: wrap;
   gap: 8px;
+  padding-bottom: 10px;
 }
 .site-nav a {
   color: #ddd;
@@ -171,7 +193,34 @@
 .empty-services { color: #ccc; grid-column: 1 / -1; text-align: center; padding: 30px; }
 .site-footer { text-align: center; color: #888; padding: 25px; background: #080808; }
 @media (max-width: 700px) {
-  .login-icon { top: 12px; right: 12px; }
+  .site-header-top {
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .site-brand {
+    align-self: center;
+  }
+  .login-icon {
+    width: fit-content;
+    min-width: min(136px, 100%);
+    height: 44px;
+    padding: 7px 11px;
+    gap: 7px;
+  }
+  .login-icon svg {
+    width: 22px;
+    height: 22px;
+    flex: 0 0 auto;
+  }
+  .login-label {
+    max-width: min(95px, calc(100vw - 90px));
+    font-size: 13px;
+  }
+  .site-nav {
+    gap: 6px;
+  }
   .feature-grid, .services-grid { grid-template-columns: 1fr; }
   .hero { min-height: 360px; padding: 55px 24px; }
   .booking-banner { margin: 10px 18px 45px; flex-direction: column; align-items: flex-start; }
