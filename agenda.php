@@ -88,7 +88,7 @@ try {
 
     <section class="card hidden" id="areaAdmin">
       <h2>Painel administrativo</h2>
-      <button id="btnVoltar">Voltar ao site</button>
+      <button type="button" id="btnVoltar">Voltar ao site</button>
 
       <h3 class="subtitulo">Agendamentos</h3>
       <div id="listaAgendamentos"></div>
@@ -96,12 +96,20 @@ try {
 
       <h3>Cadastro de serviços</h3>
       <label for="novoServico">Nome do serviço</label>
-      <input id="novoServico" placeholder="Ex: Corte degradê">
+      <input id="novoServico" type="text" placeholder="Ex: Corte degradê">
 
       <label for="precoServico">Preço (R$)</label>
       <input id="precoServico" type="number" min="0" step="0.01" placeholder="30">
 
-      <button id="btnCadastrarServico">Cadastrar serviço</button>
+      <label for="duracaoServico">Duração</label>
+      <input id="duracaoServico" type="text" placeholder="Ex: 30 min">
+
+      <label for="descricaoServico">Descrição</label>
+      <input id="descricaoServico" type="text" placeholder="Ex: Corte moderno com acabamento na navalha">
+
+      <button type="button" id="btnCadastrarServico">Cadastrar serviço</button>
+
+      <h3 class="subtitulo">Serviços cadastrados</h3>
       <div id="listaServicos"></div>
     </section>
   </main>
