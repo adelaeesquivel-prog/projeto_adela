@@ -52,28 +52,26 @@ function mostrarFormulario(tipo = "entrar") {
         <label for="contaTelefone">Telefone</label>
         <input id="contaTelefone" type="tel" maxlength="30" autocomplete="tel">
       </div>
-      <div id="camposCliente" ${tipo === "admin" ? "hidden" : ""}>
+      <div id="campoEmail">
         <label for="contaEmail">E-mail</label>
-        <input id="contaEmail" type="email" autocomplete="email">
+        <input id="contaEmail" type="email" required autocomplete="email">
       </div>
       <label for="contaSenha">Senha</label>
-      <input id="contaSenha" type="password" minlength="6" autocomplete="${registro ? "new-password" : "current-password"}">
+      <input id="contaSenha" type="password" required minlength="6" autocomplete="${registro ? "new-password" : "current-password"}">
       <p class="account-message" id="contaMensagem" role="status"></p>
       <button class="account-primary" type="submit">${registro ? "Criar conta" : "Entrar"}</button>
     </form>
-    ${tipo === "admin" ? "" : `
-      <button class="account-secondary" type="button" id="alternarConta">
-        ${registro ? "Já tenho conta" : "Criar uma conta"}
-      </button>
-    `}
+    <button class="account-secondary" type="button" id="alternarConta" ${tipo === "admin" ? "hidden" : ""}>
+      ${registro ? "Já tenho conta" : "Criar uma conta"}
+    </button>
   `;
 
   const modal = criarModal(conteudo);
   const form = modal.querySelector("#formConta");
   const mensagem = modal.querySelector("#contaMensagem");
   const camposRegistro = modal.querySelector("#camposRegistro");
-  const camposCliente = modal.querySelector("#camposCliente");
   const botaoEnvio = modal.querySelector(".account-primary");
+  const alternar = modal.querySelector("#alternarConta");
   let tipoAtual = tipo === "admin" ? "admin" : "cliente";
   let modoAtual = tipo === "cadastrar" ? "registrar" : "login";
 
@@ -82,17 +80,15 @@ function mostrarFormulario(tipo = "entrar") {
       tipoAtual = tab.dataset.form;
       modoAtual = "login";
       camposRegistro.hidden = true;
-      camposCliente.hidden = tipoAtual === "admin";
       modal.querySelectorAll(".account-tab").forEach(item => item.classList.remove("active"));
       tab.classList.add("active");
       botaoEnvio.textContent = "Entrar";
-      if (modal.querySelector("#alternarConta")) modal.querySelector("#alternarConta").hidden = tipoAtual === "admin";
+      if (alternar) alternar.hidden = tipoAtual === "admin";
       mensagem.textContent = "";
       modal.querySelector("h2").textContent = "Entrar";
     });
   });
 
-  const alternar = modal.querySelector("#alternarConta");
   if (alternar) {
     alternar.addEventListener("click", () => {
       modoAtual = modoAtual === "login" ? "registrar" : "login";
@@ -136,7 +132,6 @@ async function mostrarContaLogada(conta) {
   const conteudo = `
     <h2>Olá, ${admin ? "Administrador" : conta.nome}</h2>
     ${admin ? "<p>Acesso administrativo ativo.</p>" : `<p>${conta.email}</p><p>${conta.telefone}</p>`}
-    ${admin && window.location.pathname.endsWith("agenda.php") ? "" : ""}
     ${admin ? '<button class="account-primary" type="button" id="abrirPainel">Abrir painel administrativo</button>' : '<button class="account-primary" type="button" id="irAgendamento">Fazer agendamento</button>'}
     <button class="account-secondary" type="button" id="logoutConta">Sair da conta</button>
   `;
