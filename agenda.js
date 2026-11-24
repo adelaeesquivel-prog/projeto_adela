@@ -1,13 +1,3 @@
-<<<<<<< HEAD
-const dataInput = document.getElementById("data");
-const horarioInput = document.getElementById("horario");
-const servicoInput = document.getElementById("servico");
-const mensagem = document.getElementById("mensagem");
-const horarios = Array.from(horarioInput.options)
-  .map(opcao => opcao.value)
-  .filter(Boolean);
-=======
->>>>>>> 1f8d3175f271e11e4fb682f50e57883d2b86f8bd
 let servicos = [];
 
 async function requisicao(acao, dados = null, metodo = "POST") {
@@ -68,19 +58,9 @@ async function carregarServicos() {
 }
 
 async function carregarHorarios() {
-<<<<<<< HEAD
-  horarioInput.replaceChildren(new Option("Selecione um horário", ""));
-  if (!dataInput.value) {
-    horarios.forEach(horario => {
-      horarioInput.appendChild(new Option(horario, horario));
-    });
-    return;
-  }
-=======
   const campoData = document.getElementById("data");
   const selectHorario = document.getElementById("horario");
   if (!campoData || !selectHorario) return;
->>>>>>> 1f8d3175f271e11e4fb682f50e57883d2b86f8bd
 
   const data = campoData.value;
   selectHorario.replaceChildren();
@@ -235,16 +215,6 @@ async function mostrarServicos() {
   });
 }
 
-<<<<<<< HEAD
-async function inicializar() {
-  try {
-    await carregarHorarios();
-    if (new URLSearchParams(window.location.search).get("admin") === "1") {
-      await abrirAdmin();
-    }
-  } catch (erro) {
-    mostrarMensagem(erro.message);
-=======
 async function abrirAdmin() {
   document.getElementById("areaCliente").classList.add("hidden");
   document.getElementById("linkAdmin").classList.add("hidden");
@@ -346,7 +316,6 @@ function configurarEventos() {
         alert(erro.message);
       }
     });
->>>>>>> 1f8d3175f271e11e4fb682f50e57883d2b86f8bd
   }
 }
 
