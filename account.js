@@ -132,7 +132,7 @@ async function mostrarContaLogada(conta) {
   const conteudo = `
     <h2>Olá, ${admin ? "Administrador" : conta.nome}</h2>
     ${admin ? "<p>Acesso administrativo ativo.</p>" : `<p>${conta.email}</p><p>${conta.telefone}</p>`}
-    ${admin ? '<button class="account-primary" type="button" id="abrirPainel">Abrir painel administrativo</button>' : '<button class="account-primary" type="button" id="irAgendamento">Fazer agendamento</button>'}
+    ${admin ? '<button class="account-primary" type="button" id="abrirPainel">Abrir painel administrativo</button>' : '<button class="account-primary" type="button" id="irAgendamento">Fazer agendamento</button><button class="account-secondary" type="button" id="irHistorico">Ver histórico de agendamentos</button>'}
     <button class="account-secondary" type="button" id="logoutConta">Sair da conta</button>
   `;
   const modal = criarModal(conteudo);
@@ -145,6 +145,11 @@ async function mostrarContaLogada(conta) {
   const agendamento = modal.querySelector("#irAgendamento");
   if (agendamento) agendamento.addEventListener("click", () => {
     window.location.href = "agenda.php";
+  });
+
+  const historico = modal.querySelector("#irHistorico");
+  if (historico) historico.addEventListener("click", () => {
+    window.location.href = "historico.php";
   });
 
   modal.querySelector("#logoutConta").addEventListener("click", async () => {

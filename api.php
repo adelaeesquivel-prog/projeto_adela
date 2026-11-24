@@ -27,7 +27,7 @@ const HORARIOS = [
     '10:00', '10:30', '11:00', '11:30',
     '13:00', '13:30', '14:00', '14:30',
     '15:00', '15:30', '16:00', '16:30',
-    '17:00', '17:30', '18:00',
+    '17:00',
 ];
 
 function responder(array $dados, int $status = 200): never
@@ -254,6 +254,20 @@ try {
             }
         }
 
+        $adminId = null;
+        if (Auth::usuarioEhAdmin() && !empty($_SESSION['id'])) {
+            $adminId = (int) $_SESSION['id'];
+        } else {
+            $administradores = $adminService->listarTodos();
+            if (!empty($administradores)) {
+                $adminId = (int) $administradores[0]['id'];
+            }
+        }
+
+        if ($adminId === null || $adminId <= 0) {
+            responder(['erro' => 'Não há administrador cadastrado para receber o agendamento.'], 503);
+        }
+
         // Resolve cliente_id: usa o cliente logado ou vincula/cria pelo telefone/e-mail se necessário
         $clienteId = null;
         if (Auth::usuarioEhCliente() && !empty($_SESSION['id'])) {
@@ -274,7 +288,10 @@ try {
             $senhaAleatoria = password_hash(bin2hex(random_bytes(12)), PASSWORD_DEFAULT);
             $clienteService->inserir(new Cliente($nome, $emailGerado, $senhaAleatoria, $telefone));
             $novoCliente = $clienteService->buscarPorEmail($emailGerado);
-            $clienteId = $novoCliente !== null ? (int) $novoCliente['id'] : 0;
+            if ($novoCliente === null) {
+                responder(['erro' => 'Não foi possível registrar os dados do cliente.'], 500);
+            }
+            $clienteId = (int) $novoCliente['id'];
         }
 
         $agendamento = new Agendamento(
@@ -283,7 +300,9 @@ try {
             $clienteId,
             $servicoId,
             'pendente',
-            $observacao !== '' ? $observacao : null
+            $observacao !== '' ? $observacao : null,
+            null,
+            $adminId
         );
         $agendamentoService->inserir($agendamento);
 

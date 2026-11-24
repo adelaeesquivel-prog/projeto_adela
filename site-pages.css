@@ -196,6 +196,15 @@
 .service-card .price { color: #d6aa53; font-size: 23px; font-weight: bold; margin-top: auto; padding-top: 18px; }
 .empty-services { color: #ccc; grid-column: 1 / -1; text-align: center; padding: 30px; }
 .site-footer { text-align: center; color: #888; padding: 25px; background: #080808; }
+.history-list { display: grid; gap: 16px; }
+.history-item, .history-empty {
+  background: #202020;
+  border: 1px solid #383838;
+  border-radius: 12px;
+  padding: 22px;
+}
+.history-item h2, .history-empty h2 { color: #d6aa53; margin-bottom: 12px; }
+.history-item p, .history-empty p { color: #ccc; line-height: 1.7; }
 @media (max-width: 700px) {
   .site-header-top {
     display: flex;

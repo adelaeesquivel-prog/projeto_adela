@@ -1,38 +1,40 @@
 # Léo Barbas
 
-Site da barbearia com páginas PHP, cabeçalho e rodapé compartilhados e
-agendamentos/serviços salvos no servidor.
+Site da barbearia em PHP com catálogo de serviços, cadastro e login de clientes,
+agendamento online e consulta dos pedidos do próprio cliente. O administrador
+acessa um painel protegido para acompanhar os agendamentos recebidos.
 
-## Arquivos principais
+## Páginas principais
 
-- `index.php`: menu inicial com os links para Home, Serviços e Agendamento.
-- `home.php`, `servicos.php` e `agenda.php`: páginas do site.
-- `header.php` e `footer.php`: componentes compartilhados pelas páginas.
-- `api.php`: leitura e gravação de serviços, horários e agendamentos.
-- `style.css` e `site-pages.css`: estilos existentes, sem alterações.
+- `index.php` e `home.php`: início do site.
+- `servicos.php`: catálogo de serviços.
+- `agenda.php`: reserva de horário para clientes autenticados.
+- `historico.php`: histórico de agendamentos da conta conectada.
+- `admin/index.php`: resumo administrativo.
+- `admin/agendamento.php`: lista de agendamentos com dados do cliente e serviço.
+- `api.php`: autenticação, cadastro, disponibilidade e operações de agendamento.
+
+O ícone de perfil no cabeçalho permite criar uma conta de cliente ou entrar
+como cliente/administrador. Os agendamentos ficam associados à conta conectada;
+cada cliente só consulta os próprios registros.
+
+Se a tabela `servico` estiver vazia, o catálogo cadastra nela os seis serviços
+padrão do site. A agenda usa os mesmos registros e IDs para preencher o seletor
+e validar a reserva.
 
 ## Executar localmente
 
-É necessário ter PHP instalado. No PowerShell, na pasta do projeto, configure
-uma senha para o painel administrativo e inicie o servidor:
+É necessário ter PHP 8.1 ou superior, as extensões PDO e PDO MySQL, e o banco
+MySQL configurado para o projeto. A conexão e o nome do banco são definidos em
+`src/Database/ConexaoBD.php`; as tabelas `cliente`, `administrador`, `servico`
+e `agendamento` precisam existir no banco antes de iniciar o site.
+
+Na pasta do projeto, inicie o servidor PHP:
 
 ```powershell
-$env:LEO_ADMIN_PASSWORD = "escolha-uma-senha-forte"
 php -S localhost:8000
 ```
 
-Abra `http://localhost:8000`. Não abra os arquivos `.php` diretamente no
-navegador e não use apenas o Live Server do VS Code: eles precisam ser
-servidos pelo PHP.
-
-Os dados ficam em `projeto_adela_dados/dados.json`, na pasta ao lado do projeto.
-O servidor precisa ter permissão para criar e gravar nessa pasta. Para escolher
-outro local, configure `LEO_DATA_DIR` antes de iniciar o PHP.
-
-O painel administrativo usa `LEO_ADMIN_PASSWORD`; sem essa variável, o login
-fica desativado. Os serviços iniciais são criados automaticamente quando o
-arquivo de dados ainda não existe.
-
-Os dados antigos guardados no `localStorage` do navegador não são migrados
-automaticamente. A partir desta versão, o agendamento e o catálogo usam os
-dados compartilhados do servidor.
+Abra `http://localhost:8000` no navegador. Não abra os arquivos `.php`
+diretamente e não use apenas o Live Server do VS Code: as páginas precisam ser
+servidas pelo PHP.

@@ -3,7 +3,9 @@ namespace LeoBarbas\Auth;
 
 final class Auth
 {
-    private function __construct() {}
+    private function __construct()
+    {
+    }
 
     private static function iniciarSessao(): void
     {

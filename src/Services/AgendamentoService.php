@@ -32,6 +32,27 @@ final class AgendamentoService
         }
     }
 
+    public function listarPorCliente(int $clienteId): array
+    {
+        $sql = "SELECT a.id, a.data, a.horario, a.observacao, a.status, a.data_criacao,
+                       a.cliente_id, a.admin_id, a.servico_id, s.nome AS servico_nome,
+                       s.preco AS servico_preco
+                FROM agendamento a
+                INNER JOIN servico s ON s.id = a.servico_id
+                WHERE a.cliente_id = :cliente_id
+                ORDER BY a.data DESC, a.horario DESC";
+
+        try {
+            $consulta = $this->conexao->prepare($sql);
+            $consulta->bindValue(":cliente_id", $clienteId, PDO::PARAM_INT);
+            $consulta->execute();
+            return $consulta->fetchAll();
+        } catch (PDOException $e) {
+            Utils::registrarLog($e);
+            throw new Exception("Erro ao listar histórico de agendamentos");
+        }
+    }
+
     public function inserir(Agendamento $agendamento): void
     {
         $sql = "INSERT INTO agendamento (data, horario, observacao, status, cliente_id, admin_id, servico_id)

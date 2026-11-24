@@ -1,15 +1,10 @@
-const horarios = [
-  "08:00", "08:30", "09:00", "09:30",
-  "10:00", "10:30", "11:00", "11:30",
-  "13:00", "13:30", "14:00", "14:30",
-  "15:00", "15:30", "16:00", "16:30",
-  "17:00", "17:30", "18:00"
-];
-
 const dataInput = document.getElementById("data");
 const horarioInput = document.getElementById("horario");
 const servicoInput = document.getElementById("servico");
 const mensagem = document.getElementById("mensagem");
+const horarios = Array.from(horarioInput.options)
+  .map(opcao => opcao.value)
+  .filter(Boolean);
 let servicos = [];
 let agendamentos = [];
 
@@ -58,7 +53,12 @@ async function carregarServicos() {
 
 async function carregarHorarios() {
   horarioInput.replaceChildren(new Option("Selecione um horário", ""));
-  if (!dataInput.value) return;
+  if (!dataInput.value) {
+    horarios.forEach(horario => {
+      horarioInput.appendChild(new Option(horario, horario));
+    });
+    return;
+  }
 
   const resultado = await requisicao(
     "disponibilidade",
@@ -267,7 +267,6 @@ async function mostrarServicos() {
 
 async function inicializar() {
   try {
-    await carregarServicos();
     await carregarHorarios();
     if (new URLSearchParams(window.location.search).get("admin") === "1") {
       await abrirAdmin();
