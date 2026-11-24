@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 const dataInput = document.getElementById("data");
 const horarioInput = document.getElementById("horario");
 const servicoInput = document.getElementById("servico");
@@ -5,17 +6,16 @@ const mensagem = document.getElementById("mensagem");
 const horarios = Array.from(horarioInput.options)
   .map(opcao => opcao.value)
   .filter(Boolean);
+=======
+>>>>>>> 1f8d3175f271e11e4fb682f50e57883d2b86f8bd
 let servicos = [];
-let agendamentos = [];
 
-async function requisicao(acao, dados, metodo = "POST") {
-  const opcoes = { method: metodo, headers: {} };
+async function requisicao(acao, dados = null, metodo = "POST") {
   let url = `api.php?acao=${encodeURIComponent(acao)}`;
+  const opcoes = { method: metodo, headers: {} };
 
   if (metodo === "GET") {
-    if (dados) {
-      url += `&${new URLSearchParams(dados)}`;
-    }
+    if (dados) url += `&${new URLSearchParams(dados)}`;
   } else {
     opcoes.headers["Content-Type"] = "application/json";
     opcoes.body = JSON.stringify({ acao, ...dados });
@@ -23,35 +23,52 @@ async function requisicao(acao, dados, metodo = "POST") {
 
   const resposta = await fetch(url, opcoes);
   const resultado = await resposta.json();
-  if (!resposta.ok) {
-    throw new Error(resultado.erro || "Não foi possível concluir a operação.");
-  }
+  if (!resposta.ok) throw new Error(resultado.erro || "Erro na requisição.");
   return resultado;
 }
 
 function mostrarMensagem(texto) {
-  mensagem.textContent = texto;
-}
-
-function formatarPreco(preco) {
-  return Number(preco).toFixed(2).replace(".", ",");
+  const aviso = document.getElementById("mensagem");
+  if (aviso) aviso.textContent = texto;
 }
 
 async function carregarServicos() {
+  const select = document.getElementById("servico");
+  if (!select) return;
+
   const resultado = await requisicao("servicos", null, "GET");
   servicos = resultado.servicos;
-  servicoInput.replaceChildren(new Option("Selecione um serviço", ""));
+  select.replaceChildren();
+
+  if (!servicos.length) {
+    const option = document.createElement("option");
+    option.value = "";
+    option.textContent = "Nenhum serviço disponível";
+    select.appendChild(option);
+    return;
+  }
+
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = "Selecione um serviço";
+  select.appendChild(placeholder);
+
+  const params = new URLSearchParams(window.location.search);
+  const servicoIdUrl = params.get("servico_id");
 
   servicos.forEach(servico => {
-    const opcao = new Option(
-      `${servico.nome} - R$ ${formatarPreco(servico.preco)}`,
-      servico.id
-    );
-    servicoInput.appendChild(opcao);
+    const option = document.createElement("option");
+    option.value = servico.id;
+    option.textContent = `${servico.nome} - R$ ${Number(servico.preco).toFixed(2).replace(".", ",")}`;
+    if (servicoIdUrl && String(servico.id) === servicoIdUrl) {
+      option.selected = true;
+    }
+    select.appendChild(option);
   });
 }
 
 async function carregarHorarios() {
+<<<<<<< HEAD
   horarioInput.replaceChildren(new Option("Selecione um horário", ""));
   if (!dataInput.value) {
     horarios.forEach(horario => {
@@ -59,180 +76,77 @@ async function carregarHorarios() {
     });
     return;
   }
+=======
+  const campoData = document.getElementById("data");
+  const selectHorario = document.getElementById("horario");
+  if (!campoData || !selectHorario) return;
+>>>>>>> 1f8d3175f271e11e4fb682f50e57883d2b86f8bd
 
-  const resultado = await requisicao(
-    "disponibilidade",
-    { data: dataInput.value },
-    "GET"
-  );
-  const ocupados = new Set(resultado.ocupados);
-  const agora = new Date();
-  const hoje = [
-    agora.getFullYear(),
-    String(agora.getMonth() + 1).padStart(2, "0"),
-    String(agora.getDate()).padStart(2, "0")
-  ].join("-");
+  const data = campoData.value;
+  selectHorario.replaceChildren();
 
-  horarios.forEach(horario => {
-    const opcao = new Option("", horario);
-    const passou = dataInput.value < hoje ||
-      (dataInput.value === hoje && horario <=
-        `${String(agora.getHours()).padStart(2, "0")}:${String(agora.getMinutes()).padStart(2, "0")}`);
-
-    if (ocupados.has(horario)) {
-      opcao.textContent = `${horario} - Ocupado`;
-      opcao.disabled = true;
-    } else if (passou) {
-      opcao.textContent = `${horario} - Indisponível`;
-      opcao.disabled = true;
-    } else {
-      opcao.textContent = `${horario} - Disponível`;
-    }
-    horarioInput.appendChild(opcao);
-  });
-}
-
-function dataHoje() {
-  const hoje = new Date();
-  return [
-    hoje.getFullYear(),
-    String(hoje.getMonth() + 1).padStart(2, "0"),
-    String(hoje.getDate()).padStart(2, "0")
-  ].join("-");
-}
-
-dataInput.min = dataHoje();
-
-dataInput.addEventListener("change", async () => {
-  try {
-    await carregarHorarios();
-    mostrarMensagem("");
-  } catch (erro) {
-    mostrarMensagem(erro.message);
+  if (!data) {
+    const option = document.createElement("option");
+    option.value = "";
+    option.textContent = "Selecione uma data primeiro";
+    selectHorario.appendChild(option);
+    return;
   }
-});
-
-document.getElementById("formAgendamento").addEventListener("submit", async evento => {
-  evento.preventDefault();
-  mostrarMensagem("");
 
   try {
-    const resultado = await requisicao("agendar", {
-      nome: document.getElementById("nome").value.trim(),
-      telefone: document.getElementById("telefone").value.trim(),
-      servico_id: servicoInput.value,
-      data: dataInput.value,
-      horario: horarioInput.value
+    const { horarios, ocupados } = await requisicao("disponibilidade", { data }, "GET");
+    horarios.forEach(hora => {
+      const option = document.createElement("option");
+      option.value = hora;
+      const ocupado = ocupados.includes(hora);
+      option.textContent = ocupado ? `${hora} (Indisponível)` : hora;
+      option.disabled = ocupado;
+      selectHorario.appendChild(option);
     });
-
-    alert(resultado.mensagem);
-    evento.currentTarget.reset();
-    await carregarHorarios();
   } catch (erro) {
     mostrarMensagem(erro.message);
-    if (erro.message.includes("reservado")) {
-      await carregarHorarios();
-    }
   }
-});
-
-document.getElementById("linkAdmin").addEventListener("click", async () => {
-  try {
-    const sessao = await requisicao("admin", null, "GET");
-    if (!sessao.autenticado) {
-      const senha = prompt("Digite a senha do administrador:");
-      if (senha === null) return;
-      await requisicao("login", { senha });
-    }
-
-    await abrirAdmin();
-  } catch (erro) {
-    mostrarMensagem(erro.message);
-    alert(erro.message);
-  }
-});
-
-async function abrirAdmin() {
-  const resultado = await requisicao("agendamentos", null, "GET");
-  agendamentos = resultado.agendamentos;
-  document.getElementById("areaCliente").classList.add("hidden");
-  document.getElementById("areaAdmin").classList.remove("hidden");
-  document.getElementById("linkAdmin").classList.add("hidden");
-  mostrarAgendamentos();
-  await mostrarServicos();
 }
 
-document.getElementById("btnVoltar").addEventListener("click", async () => {
-  try {
-    await requisicao("logout", {});
-    document.getElementById("areaAdmin").classList.add("hidden");
-    document.getElementById("areaCliente").classList.remove("hidden");
-    document.getElementById("linkAdmin").classList.remove("hidden");
-  } catch (erro) {
-    alert(erro.message);
-  }
-});
-
-function mostrarAgendamentos() {
+async function mostrarAgendamentos() {
+  const resultado = await requisicao("agendamentos", null, "GET");
   const lista = document.getElementById("listaAgendamentos");
   lista.replaceChildren();
 
-  if (agendamentos.length === 0) {
-    lista.textContent = "Nenhum agendamento cadastrado.";
+  if (!resultado.agendamentos.length) {
+    const vazio = document.createElement("p");
+    vazio.textContent = "Nenhum agendamento encontrado.";
+    lista.appendChild(vazio);
     return;
   }
 
-  [...agendamentos]
-    .sort((a, b) => (a.data + a.horario).localeCompare(b.data + b.horario))
-    .forEach(agendamento => {
-      const div = document.createElement("div");
-      div.className = "agendamento";
+  resultado.agendamentos.forEach(agendamento => {
+    const div = document.createElement("div");
+    div.className = "agendamento";
 
-      const info = document.createElement("div");
-      info.textContent = `Cliente: ${agendamento.nome} | Telefone: ${agendamento.telefone}`;
+    const info = document.createElement("span");
+    const horaCurta = String(agendamento.horario || "").slice(0, 5);
+    const nomeServico = agendamento.servico_nome || agendamento.servico || `Serviço #${agendamento.servico_id}`;
+    const nomeCliente = agendamento.cliente_nome || agendamento.nome || `Cliente #${agendamento.cliente_id}`;
+    info.textContent = `${agendamento.data} às ${horaCurta} - ${nomeCliente} (${nomeServico})`;
 
-      const detalhes = document.createElement("div");
-      detalhes.textContent =
-        `Serviço: ${agendamento.servico} | R$ ${formatarPreco(agendamento.preco)} | Data: ${agendamento.data} | Horário: ${agendamento.horario}`;
-
-      const cancelar = document.createElement("button");
-      cancelar.textContent = "Cancelar";
-      cancelar.addEventListener("click", async () => {
-        if (!confirm("Deseja cancelar este agendamento?")) return;
-        try {
-          const resultado = await requisicao("cancelar", { id: agendamento.id });
-          agendamentos = resultado.agendamentos;
-          mostrarAgendamentos();
-          await carregarHorarios();
-        } catch (erro) {
-          alert(erro.message);
-        }
-      });
-
-      div.append(info, detalhes, cancelar);
-      lista.appendChild(div);
+    const botaoCancelar = document.createElement("button");
+    botaoCancelar.type = "button";
+    botaoCancelar.textContent = "Cancelar";
+    botaoCancelar.addEventListener("click", async () => {
+      try {
+        await requisicao("cancelar", { id: agendamento.id });
+        await mostrarAgendamentos();
+        await carregarHorarios();
+      } catch (erro) {
+        alert(erro.message);
+      }
     });
+
+    div.append(info, botaoCancelar);
+    lista.appendChild(div);
+  });
 }
-
-document.getElementById("btnCadastrarServico").addEventListener("click", async () => {
-  const nome = document.getElementById("novoServico").value.trim();
-  const campoPreco = document.getElementById("precoServico").value;
-
-  if (!nome || campoPreco === "") {
-    alert("Informe o nome e um preço válido!");
-    return;
-  }
-
-  try {
-    await requisicao("adicionar_servico", { nome, preco: campoPreco });
-    await carregarServicos();
-    await mostrarServicos();
-    document.getElementById("novoServico").value = "";
-    document.getElementById("precoServico").value = "";
-  } catch (erro) {
-    alert(erro.message);
-  }
-});
 
 async function mostrarServicos() {
   const resultado = await requisicao("servicos", null, "GET");
@@ -240,16 +154,72 @@ async function mostrarServicos() {
   const lista = document.getElementById("listaServicos");
   lista.replaceChildren();
 
+  if (!servicos.length) {
+    const vazio = document.createElement("p");
+    vazio.textContent = "Nenhum serviço cadastrado.";
+    lista.appendChild(vazio);
+    return;
+  }
+
   servicos.forEach(servico => {
     const div = document.createElement("div");
     div.className = "agendamento";
 
-    const texto = document.createElement("span");
-    texto.textContent = `${servico.nome} - R$ ${formatarPreco(servico.preco)}`;
+    const inputNome = document.createElement("input");
+    inputNome.type = "text";
+    inputNome.placeholder = "Nome";
+    inputNome.value = servico.nome;
 
-    const botao = document.createElement("button");
-    botao.textContent = "Excluir";
-    botao.addEventListener("click", async () => {
+    const inputPreco = document.createElement("input");
+    inputPreco.type = "number";
+    inputPreco.min = "0";
+    inputPreco.step = "0.01";
+    inputPreco.placeholder = "Preço";
+    inputPreco.value = servico.preco;
+
+    const inputDuracao = document.createElement("input");
+    inputDuracao.type = "text";
+    inputDuracao.placeholder = "Duração";
+    inputDuracao.value = servico.duracao || "30 min";
+
+    const inputDescricao = document.createElement("input");
+    inputDescricao.type = "text";
+    inputDescricao.placeholder = "Descrição";
+    inputDescricao.value = servico.descricao || "";
+
+    const botaoAtualizar = document.createElement("button");
+    botaoAtualizar.type = "button";
+    botaoAtualizar.textContent = "Atualizar";
+    botaoAtualizar.addEventListener("click", async () => {
+      const nome = inputNome.value.trim();
+      const preco = inputPreco.value;
+      const duracao = inputDuracao.value.trim() || "30 min";
+      const descricao = inputDescricao.value.trim();
+      if (!nome || preco === "") {
+        alert("Informe o nome e o preço do serviço.");
+        return;
+      }
+
+      try {
+        await requisicao("atualizar_servico", {
+          id: servico.id,
+          nome,
+          preco,
+          duracao,
+          descricao
+        });
+        await carregarServicos();
+        await mostrarServicos();
+        alert("Serviço atualizado com sucesso.");
+      } catch (erro) {
+        alert(erro.message);
+      }
+    });
+
+    const botaoExcluir = document.createElement("button");
+    botaoExcluir.type = "button";
+    botaoExcluir.textContent = "Excluir";
+    botaoExcluir.addEventListener("click", async () => {
       if (!confirm("Excluir este serviço?")) return;
       try {
         await requisicao("excluir_servico", { id: servico.id });
@@ -260,11 +230,12 @@ async function mostrarServicos() {
       }
     });
 
-    div.append(texto, botao);
+    div.append(inputNome, inputPreco, inputDuracao, inputDescricao, botaoAtualizar, botaoExcluir);
     lista.appendChild(div);
   });
 }
 
+<<<<<<< HEAD
 async function inicializar() {
   try {
     await carregarHorarios();
@@ -273,7 +244,128 @@ async function inicializar() {
     }
   } catch (erro) {
     mostrarMensagem(erro.message);
+=======
+async function abrirAdmin() {
+  document.getElementById("areaCliente").classList.add("hidden");
+  document.getElementById("linkAdmin").classList.add("hidden");
+  document.getElementById("areaAdmin").classList.remove("hidden");
+  await mostrarAgendamentos();
+  await mostrarServicos();
+}
+
+function fecharAdmin() {
+  document.getElementById("areaAdmin").classList.add("hidden");
+  document.getElementById("areaCliente").classList.remove("hidden");
+  document.getElementById("linkAdmin").classList.remove("hidden");
+}
+
+function configurarEventos() {
+  const campoData = document.getElementById("data");
+  if (campoData) {
+    campoData.min = new Date().toISOString().split("T")[0];
+    campoData.addEventListener("change", carregarHorarios);
+  }
+
+  const formAgendamento = document.getElementById("formAgendamento");
+  if (formAgendamento) {
+    formAgendamento.addEventListener("submit", async evento => {
+      evento.preventDefault();
+      mostrarMensagem("");
+
+      const dados = {
+        nome: document.getElementById("nome").value.trim(),
+        telefone: document.getElementById("telefone").value.trim(),
+        servico_id: Number(document.getElementById("servico").value),
+        data: document.getElementById("data").value,
+        horario: document.getElementById("horario").value
+      };
+
+      try {
+        const resultado = await requisicao("agendar", dados);
+        mostrarMensagem(resultado.mensagem || "Agendamento confirmado.");
+        formAgendamento.reset();
+        await carregarHorarios();
+      } catch (erro) {
+        mostrarMensagem(erro.message);
+      }
+    });
+  }
+
+  const linkAdmin = document.getElementById("linkAdmin");
+  if (linkAdmin) {
+    linkAdmin.addEventListener("click", async () => {
+      try {
+        const sessao = await requisicao("admin", null, "GET");
+        if (!sessao.autenticado) {
+          if (typeof mostrarFormulario === "function") {
+            mostrarFormulario("admin");
+          } else {
+            alert("Faça login como administrador primeiro.");
+          }
+          return;
+        }
+        await abrirAdmin();
+      } catch (erro) {
+        alert(erro.message);
+      }
+    });
+  }
+
+  const btnVoltar = document.getElementById("btnVoltar");
+  if (btnVoltar) {
+    btnVoltar.addEventListener("click", fecharAdmin);
+  }
+
+  const btnCadastrarServico = document.getElementById("btnCadastrarServico");
+  if (btnCadastrarServico) {
+    btnCadastrarServico.addEventListener("click", async () => {
+      const inputNome = document.getElementById("novoServico");
+      const inputPreco = document.getElementById("precoServico");
+      const inputDuracao = document.getElementById("duracaoServico");
+      const inputDescricao = document.getElementById("descricaoServico");
+
+      const nome = inputNome.value.trim();
+      const preco = inputPreco.value;
+      const duracao = inputDuracao ? inputDuracao.value.trim() : "";
+      const descricao = inputDescricao ? inputDescricao.value.trim() : "";
+
+      if (!nome || preco === "") {
+        alert("Preencha o nome e o preço do serviço.");
+        return;
+      }
+
+      try {
+        await requisicao("adicionar_servico", { nome, preco, duracao, descricao });
+        inputNome.value = "";
+        inputPreco.value = "";
+        if (inputDuracao) inputDuracao.value = "";
+        if (inputDescricao) inputDescricao.value = "";
+        await carregarServicos();
+        await mostrarServicos();
+      } catch (erro) {
+        alert(erro.message);
+      }
+    });
+>>>>>>> 1f8d3175f271e11e4fb682f50e57883d2b86f8bd
   }
 }
 
-inicializar();
+async function inicializar() {
+  configurarEventos();
+  await carregarServicos();
+  await carregarHorarios();
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("admin") === "1") {
+    try {
+      const sessao = await requisicao("admin", null, "GET");
+      if (sessao.autenticado) {
+        await abrirAdmin();
+      }
+    } catch (erro) {
+      mostrarMensagem(erro.message);
+    }
+  }
+}
+
+document.addEventListener("DOMContentLoaded", inicializar);

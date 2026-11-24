@@ -254,6 +254,7 @@ try {
             }
         }
 
+<<<<<<< HEAD
         $adminId = null;
         if (Auth::usuarioEhAdmin() && !empty($_SESSION['id'])) {
             $adminId = (int) $_SESSION['id'];
@@ -269,6 +270,8 @@ try {
         }
 
         // Resolve cliente_id: usa o cliente logado ou vincula/cria pelo telefone/e-mail se necessário
+=======
+>>>>>>> 1f8d3175f271e11e4fb682f50e57883d2b86f8bd
         $clienteId = null;
         if (Auth::usuarioEhCliente() && !empty($_SESSION['id'])) {
             $clienteId = (int) $_SESSION['id'];
@@ -283,7 +286,6 @@ try {
         }
 
         if ($clienteId === null) {
-            // Se não houver cliente cadastrado com e-mail, cria um registro básico para satisfazer a FK cliente_id
             $emailGerado = 'cliente_' . bin2hex(random_bytes(5)) . '@local.invalid';
             $senhaAleatoria = password_hash(bin2hex(random_bytes(12)), PASSWORD_DEFAULT);
             $clienteService->inserir(new Cliente($nome, $emailGerado, $senhaAleatoria, $telefone));
@@ -340,6 +342,34 @@ try {
             $descricao
         );
         $servicoService->inserir($servico);
+
+        responder(['servicos' => $servicoService->listarTodos()]);
+    }
+
+    if ($acao === 'atualizar_servico') {
+        $id = (int) ($entrada['id'] ?? 0);
+        $nome = trim((string) ($entrada['nome'] ?? ''));
+        $preco = $entrada['preco'] ?? null;
+        $duracao = trim((string) ($entrada['duracao'] ?? '30 min'));
+        $descricao = isset($entrada['descricao']) && trim((string) $entrada['descricao']) !== ''
+            ? trim((string) $entrada['descricao'])
+            : null;
+
+        if ($id <= 0 || $servicoService->buscarPorId($id) === null) {
+            responder(['erro' => 'Serviço não encontrado.'], 404);
+        }
+        if ($nome === '' || mb_strlen($nome) > 80 || !is_numeric($preco) || (float) $preco < 0) {
+            responder(['erro' => 'Informe um nome e um preço válido para o serviço.'], 400);
+        }
+
+        $servico = new Servico(
+            $nome,
+            round((float) $preco, 2),
+            $duracao !== '' ? $duracao : '30 min',
+            $descricao,
+            $id
+        );
+        $servicoService->atualizar($servico);
 
         responder(['servicos' => $servicoService->listarTodos()]);
     }
