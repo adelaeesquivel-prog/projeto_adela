@@ -104,6 +104,13 @@
 .account-message { min-height: 20px; color: #d6aa53; margin-top: 12px; }
 .account-primary { width: 100%; background: #c69b45; color: #111; border: 0; border-radius: 6px; padding: 12px; font-weight: bold; }
 .account-secondary { width: 100%; background: #303030; color: #fff; border: 1px solid #555; border-radius: 6px; padding: 12px; }
+.account-history-button { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.account-history-button svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.account-history-list { display: grid; gap: 10px; }
+.account-history-item { padding: 12px; border: 1px solid #555; border-radius: 8px; background: #303030; }
+.account-history-item h3 { margin: 0 0 8px; color: #d6aa53; }
+.account-history-item p { margin: 4px 0; }
+.account-history-status { color: #ccc; font-size: 14px; }
 .site-header .logo {
   display: inline-block;
   color: #d6aa53;

@@ -60,6 +60,18 @@ function validarData(string $data): bool
     return $dataFormatada !== false && $dataFormatada->format('Y-m-d') === $data;
 }
 
+function normalizarTelefone(string $telefone): ?string
+{
+    $digitos = preg_replace('/\D+/', '', $telefone);
+    if (!is_string($digitos) || !in_array(strlen($digitos), [10, 11], true)) {
+        return null;
+    }
+
+    $numero = substr($digitos, 2);
+    return '(' . substr($digitos, 0, 2) . ') '
+        . substr($numero, 0, -4) . '-' . substr($numero, -4);
+}
+
 $servicoService = new ServicoService();
 $agendamentoService = new AgendamentoService();
 $clienteService = new ClienteService();
@@ -116,6 +128,16 @@ try {
             }
 
             responder(['autenticado' => false]);
+        }
+
+        if ($acao === 'historico') {
+            if (!Auth::usuarioEhCliente() || empty($_SESSION['id'])) {
+                responder(['erro' => 'Entre como cliente para consultar seu histórico.'], 401);
+            }
+
+            responder([
+                'agendamentos' => $agendamentoService->listarPorCliente((int) $_SESSION['id']),
+            ]);
         }
 
         if ($acao === 'agendamentos') {
@@ -187,7 +209,7 @@ try {
     if ($acao === 'registrar') {
         $nome = trim((string) ($entrada['nome'] ?? ''));
         $email = mb_strtolower(trim((string) ($entrada['email'] ?? '')));
-        $telefone = trim((string) ($entrada['telefone'] ?? ''));
+        $telefone = normalizarTelefone((string) ($entrada['telefone'] ?? ''));
         $senha = $entrada['senha'] ?? null;
 
         if ($nome === '' || mb_strlen($nome) > 120) {
@@ -196,8 +218,8 @@ try {
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             responder(['erro' => 'Informe um e-mail válido.'], 400);
         }
-        if (mb_strlen($telefone) < 8 || mb_strlen($telefone) > 30) {
-            responder(['erro' => 'Informe um telefone válido.'], 400);
+        if ($telefone === null) {
+            responder(['erro' => 'Informe um telefone com DDD e 10 ou 11 dígitos.'], 400);
         }
         if (!is_string($senha) || mb_strlen($senha) < 6 || mb_strlen($senha) > 100) {
             responder(['erro' => 'A senha deve ter entre 6 e 100 caracteres.'], 400);
@@ -226,14 +248,17 @@ try {
 
     if ($acao === 'agendar') {
         $nome = trim((string) ($entrada['nome'] ?? ''));
-        $telefone = trim((string) ($entrada['telefone'] ?? ''));
+        $telefone = normalizarTelefone((string) ($entrada['telefone'] ?? ''));
         $servicoId = (int) ($entrada['servico_id'] ?? 0);
         $data = (string) ($entrada['data'] ?? '');
         $horario = (string) ($entrada['horario'] ?? '');
         $observacao = isset($entrada['observacao']) ? trim((string) $entrada['observacao']) : null;
 
-        if ($nome === '' || mb_strlen($nome) > 120 || mb_strlen($telefone) < 8 || mb_strlen($telefone) > 30) {
-            responder(['erro' => 'Informe seu nome e um telefone válido.'], 400);
+        if ($nome === '' || mb_strlen($nome) > 120) {
+            responder(['erro' => 'Informe seu nome.'], 400);
+        }
+        if ($telefone === null) {
+            responder(['erro' => 'Informe um telefone com DDD e 10 ou 11 dígitos.'], 400);
         }
         if ($servicoId <= 0 || !validarData($data) || $data < date('Y-m-d') || !in_array($horario, HORARIOS, true)) {
             responder(['erro' => 'Escolha uma data e um horário válidos.'], 400);

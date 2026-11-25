@@ -1,0 +1,5 @@
+ALTER TABLE servico
+    ADD COLUMN duracao VARCHAR(50) NOT NULL DEFAULT '30 min';
+
+ALTER TABLE agendamento
+    MODIFY COLUMN admin_id INT NULL;

@@ -21,7 +21,7 @@
         <input type="text" id="nome" required placeholder="Digite seu nome">
 
         <label for="telefone">Telefone</label>
-        <input type="tel" id="telefone" required placeholder="(00) 00000-0000">
+        <input type="tel" id="telefone" required minlength="10" maxlength="11" pattern="[0-9]{10,11}" inputmode="numeric" placeholder="DDD + número (10 ou 11 dígitos)">
 
         <label for="servico">Escolha o serviço</label>
         <select id="servico" required></select>
@@ -31,7 +31,7 @@
 
         <label for="horario">Escolha o horário</label>
         <select id="horario" required>
-          <option value="">Selecione uma data primeiro</option>
+          <option value="" selected>Selecione uma data primeiro</option>
         </select>
 
         <p class="aviso" id="mensagem" role="status"></p>

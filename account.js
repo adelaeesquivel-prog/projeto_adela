@@ -50,7 +50,7 @@ function mostrarFormulario(tipo = "entrar") {
         <label for="contaNome">Nome</label>
         <input id="contaNome" type="text" maxlength="120" autocomplete="name">
         <label for="contaTelefone">Telefone</label>
-        <input id="contaTelefone" type="tel" maxlength="30" autocomplete="tel">
+        <input id="contaTelefone" type="tel" minlength="10" maxlength="11" pattern="[0-9]{10,11}" inputmode="numeric" placeholder="DDD + número" autocomplete="tel">
       </div>
       <div id="campoEmail">
         <label for="contaEmail">E-mail</label>
@@ -72,6 +72,13 @@ function mostrarFormulario(tipo = "entrar") {
   const camposRegistro = modal.querySelector("#camposRegistro");
   const botaoEnvio = modal.querySelector(".account-primary");
   const alternar = modal.querySelector("#alternarConta");
+  const campoTelefone = modal.querySelector("#contaTelefone");
+  if (campoTelefone) {
+    campoTelefone.addEventListener("input", () => {
+      campoTelefone.value = campoTelefone.value.replace(/\D/g, "").slice(0, 11);
+    });
+  }
+
   let tipoAtual = tipo === "admin" ? "admin" : "cliente";
   let modoAtual = tipo === "cadastrar" ? "registrar" : "login";
 
@@ -132,10 +139,22 @@ async function mostrarContaLogada(conta) {
   const conteudo = `
     <h2>Olá, ${admin ? "Administrador" : conta.nome}</h2>
     ${admin ? "<p>Acesso administrativo ativo.</p>" : `<p>${conta.email}</p><p>${conta.telefone}</p>`}
+    ${admin ? "" : `<button class="account-secondary account-history-button" type="button" id="verHistorico">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+        <path d="M7 3v4M17 3v4M3 10h18M8 14h3M8 17h6"></path>
+      </svg>
+      Histórico de agendamentos
+    </button>`}
     ${admin ? '<button class="account-primary" type="button" id="abrirPainel">Abrir painel administrativo</button>' : '<button class="account-primary" type="button" id="irAgendamento">Fazer agendamento</button>'}
     <button class="account-secondary" type="button" id="logoutConta">Sair da conta</button>
   `;
   const modal = criarModal(conteudo);
+
+  const historico = modal.querySelector("#verHistorico");
+  if (historico) {
+    historico.addEventListener("click", () => mostrarHistoricoAgendamentos(conta));
+  }
 
   const painel = modal.querySelector("#abrirPainel");
   if (painel) painel.addEventListener("click", () => {
@@ -152,6 +171,59 @@ async function mostrarContaLogada(conta) {
     modal.remove();
     atualizarConta();
   });
+}
+
+async function mostrarHistoricoAgendamentos(conta) {
+  const modal = criarModal(`
+    <h2>Histórico de agendamentos</h2>
+    <div class="account-history-list" id="historicoAgendamentos">
+      <p class="account-message">Carregando histórico...</p>
+    </div>
+    <button class="account-secondary" type="button" id="voltarConta">Voltar à conta</button>
+  `);
+  modal.querySelector("#voltarConta").addEventListener("click", () => mostrarContaLogada(conta));
+
+  const lista = modal.querySelector("#historicoAgendamentos");
+  try {
+    const resultado = await requisicaoConta("historico", null, "GET");
+    lista.replaceChildren();
+
+    if (!resultado.agendamentos.length) {
+      const vazio = document.createElement("p");
+      vazio.textContent = "Você ainda não tem agendamentos.";
+      lista.appendChild(vazio);
+      return;
+    }
+
+    resultado.agendamentos.forEach(agendamento => {
+      const item = document.createElement("article");
+      item.className = "account-history-item";
+
+      const servico = document.createElement("h3");
+      servico.textContent = agendamento.servico_nome || "Serviço indisponível";
+
+      const dataPartes = String(agendamento.data || "").split("-");
+      const data = dataPartes.length === 3
+        ? `${dataPartes[2]}/${dataPartes[1]}/${dataPartes[0]}`
+        : String(agendamento.data || "");
+      const horario = String(agendamento.horario || "").slice(0, 5);
+      const detalhes = document.createElement("p");
+      detalhes.textContent = `${data} às ${horario}`;
+
+      const status = document.createElement("p");
+      status.className = "account-history-status";
+      status.textContent = `Status: ${agendamento.status || "não informado"}`;
+
+      item.append(servico, detalhes, status);
+      lista.appendChild(item);
+    });
+  } catch (erro) {
+    lista.replaceChildren();
+    const mensagem = document.createElement("p");
+    mensagem.className = "account-message";
+    mensagem.textContent = erro.message;
+    lista.appendChild(mensagem);
+  }
 }
 
 async function atualizarConta() {

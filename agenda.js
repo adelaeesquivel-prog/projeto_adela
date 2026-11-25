@@ -34,6 +34,8 @@ async function carregarServicos() {
     const option = document.createElement("option");
     option.value = "";
     option.textContent = "Nenhum serviço disponível";
+    option.disabled = true;
+    option.selected = true;
     select.appendChild(option);
     return;
   }
@@ -41,6 +43,8 @@ async function carregarServicos() {
   const placeholder = document.createElement("option");
   placeholder.value = "";
   placeholder.textContent = "Selecione um serviço";
+  placeholder.disabled = true;
+  placeholder.selected = true;
   select.appendChild(placeholder);
 
   const params = new URLSearchParams(window.location.search);
@@ -69,21 +73,41 @@ async function carregarHorarios() {
     const option = document.createElement("option");
     option.value = "";
     option.textContent = "Selecione uma data primeiro";
+    option.disabled = true;
+    option.selected = true;
     selectHorario.appendChild(option);
     return;
   }
 
   try {
     const { horarios, ocupados } = await requisicao("disponibilidade", { data }, "GET");
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = "Selecione um horário";
+    placeholder.disabled = true;
+    placeholder.selected = true;
+    selectHorario.appendChild(placeholder);
+
+    let horariosDisponiveis = 0;
     horarios.forEach(hora => {
       const option = document.createElement("option");
       option.value = hora;
       const ocupado = ocupados.includes(hora);
       option.textContent = ocupado ? `${hora} (Indisponível)` : hora;
       option.disabled = ocupado;
+      if (!ocupado) horariosDisponiveis++;
       selectHorario.appendChild(option);
     });
+    if (horariosDisponiveis === 0) {
+      placeholder.textContent = "Não há horários disponíveis nesta data";
+    }
   } catch (erro) {
+    const option = document.createElement("option");
+    option.value = "";
+    option.textContent = "Não foi possível carregar os horários";
+    option.disabled = true;
+    option.selected = true;
+    selectHorario.appendChild(option);
     mostrarMensagem(erro.message);
   }
 }
@@ -232,8 +256,20 @@ function fecharAdmin() {
 function configurarEventos() {
   const campoData = document.getElementById("data");
   if (campoData) {
-    campoData.min = new Date().toISOString().split("T")[0];
+    const hoje = new Date();
+    campoData.min = [
+      hoje.getFullYear(),
+      String(hoje.getMonth() + 1).padStart(2, "0"),
+      String(hoje.getDate()).padStart(2, "0")
+    ].join("-");
     campoData.addEventListener("change", carregarHorarios);
+  }
+
+  const campoTelefone = document.getElementById("telefone");
+  if (campoTelefone) {
+    campoTelefone.addEventListener("input", () => {
+      campoTelefone.value = campoTelefone.value.replace(/\D/g, "").slice(0, 11);
+    });
   }
 
   const formAgendamento = document.getElementById("formAgendamento");
@@ -321,7 +357,11 @@ function configurarEventos() {
 
 async function inicializar() {
   configurarEventos();
-  await carregarServicos();
+  try {
+    await carregarServicos();
+  } catch (erro) {
+    mostrarMensagem(erro.message);
+  }
   await carregarHorarios();
 
   const params = new URLSearchParams(window.location.search);
