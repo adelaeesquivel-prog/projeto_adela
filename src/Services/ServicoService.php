@@ -107,7 +107,9 @@ final class ServicoService
 
     public function buscarPorId(int $id): ?array
     {
-        $sql = "SELECT id, nome, descricao, preco FROM servico WHERE id = :id";
+        $sql = "SELECT id, nome, descricao, preco, duracao
+        FROM servico
+        WHERE id = :id";
 
         try {
             $consulta = $this->conexao->prepare($sql);
@@ -123,14 +125,18 @@ final class ServicoService
     public function atualizar(Servico $servico): void
     {
         $sql = "UPDATE servico
-                SET nome = :nome, descricao = :descricao, preco = :preco
-                WHERE id = :id";
+        SET nome = :nome,
+            descricao = :descricao,
+            preco = :preco,
+            duracao = :duracao
+        WHERE id = :id";
 
         try {
             $consulta = $this->conexao->prepare($sql);
             $consulta->bindValue(":nome", $servico->getNome());
             $consulta->bindValue(":descricao", $servico->getDescricao());
             $consulta->bindValue(":preco", $servico->getPreco());
+            $consulta->bindValue(":duracao", $servico->getDuracao());
             $consulta->bindValue(":id", $servico->getId());
             $consulta->execute();
         } catch (PDOException $e) {
