@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 [2026-11-24 09:34:20]
 Arquivo: C:\backend\projetoIntegrador\projeto_adela\src\Services\ServicoService.php
 Linha: 25
@@ -1088,7 +1087,6 @@ Mensagem: SQLSTATE[23000]: Integrity constraint violation: 1048 Column 'admin_id
 Arquivo: C:\backend\projetoIntegrador\projeto_adela\src\Services\AgendamentoService.php
 Linha: 70
 Mensagem: SQLSTATE[23000]: Integrity constraint violation: 1048 Column 'admin_id' cannot be null
-=======
 [2026-11-24 10:03:35]
 Arquivo: C:\backend\projeto-adela\projeto_adela\src\Services\ServicoService.php
 Linha: 44
@@ -1098,5 +1096,3 @@ Mensagem: SQLSTATE[01000]: Warning: 1265 Data truncated for column 'duracao' at 
 Arquivo: C:\backend\projeto-adela\projeto_adela\src\Services\ServicoService.php
 Linha: 44
 Mensagem: SQLSTATE[01000]: Warning: 1265 Data truncated for column 'duracao' at row 1
->>>>>>> 1f8d3175f271e11e4fb682f50e57883d2b86f8bd
-
