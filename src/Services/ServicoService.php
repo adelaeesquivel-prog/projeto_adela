@@ -58,7 +58,9 @@ final class ServicoService
 
     public function listarTodos(): array
     {
-        $sql = "SELECT id, nome, descricao, preco FROM servico ORDER BY nome";
+        $sql = "SELECT id, nome, descricao, preco, duracao
+        FROM servico
+        ORDER BY nome";
 
         try {
             $consulta = $this->conexao->query($sql);
@@ -87,14 +89,15 @@ final class ServicoService
 
     public function inserir(Servico $servico): void
     {
-        $sql = "INSERT INTO servico (nome, descricao, preco)
-                VALUES (:nome, :descricao, :preco)";
+        $sql = "INSERT INTO servico (nome, descricao, preco, duracao)
+        VALUES (:nome, :descricao, :preco, :duracao)";
 
         try {
             $consulta = $this->conexao->prepare($sql);
             $consulta->bindValue(":nome", $servico->getNome());
             $consulta->bindValue(":descricao", $servico->getDescricao());
             $consulta->bindValue(":preco", $servico->getPreco());
+            $consulta->bindValue(":duracao", $servico->getDuracao());
             $consulta->execute();
         } catch (PDOException $e) {
             Utils::registrarLog($e);
