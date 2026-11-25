@@ -1,4 +1,12 @@
 let servicos = [];
+const opcoesStatusAgendamento = [
+  { valor: "pendente", texto: "Pendente" },
+  { valor: "confirmado", texto: "Confirmado" },
+  { valor: "concluido", texto: "Concluído" },
+  { valor: "falta", texto: "Falta" },
+  { valor: "falta_justificada", texto: "Falta com justificativa" },
+  { valor: "cancelado", texto: "Cancelado" }
+];
 
 async function requisicao(acao, dados = null, metodo = "POST") {
   let url = `api.php?acao=${encodeURIComponent(acao)}`;
@@ -134,6 +142,61 @@ async function mostrarAgendamentos() {
     const nomeCliente = agendamento.cliente_nome || agendamento.nome || `Cliente #${agendamento.cliente_id}`;
     info.textContent = `${agendamento.data} às ${horaCurta} - ${nomeCliente} (${nomeServico})`;
 
+    const controles = document.createElement("div");
+    controles.className = "admin-appointment-controls";
+
+    const seletorStatus = document.createElement("select");
+    seletorStatus.setAttribute("aria-label", `Status de ${nomeCliente}`);
+    const statusAtual = String(agendamento.status || "pendente");
+    const opcoes = [...opcoesStatusAgendamento];
+    if (!opcoes.some(opcao => opcao.valor === statusAtual)) {
+      opcoes.push({ valor: statusAtual, texto: statusAtual });
+    }
+    opcoes.forEach(opcao => {
+      const option = document.createElement("option");
+      option.value = opcao.valor;
+      option.textContent = opcao.texto;
+      seletorStatus.appendChild(option);
+    });
+    seletorStatus.value = statusAtual;
+
+    const justificativa = document.createElement("textarea");
+    justificativa.maxLength = 1000;
+    justificativa.placeholder = "Justificativa da falta";
+    justificativa.setAttribute("aria-label", `Justificativa da falta de ${nomeCliente}`);
+    justificativa.value = agendamento.justificativa_falta || "";
+    justificativa.hidden = statusAtual !== "falta_justificada";
+    justificativa.required = statusAtual === "falta_justificada";
+    seletorStatus.addEventListener("change", () => {
+      const exigeJustificativa = seletorStatus.value === "falta_justificada";
+      justificativa.hidden = !exigeJustificativa;
+      justificativa.required = exigeJustificativa;
+    });
+
+    const botaoSalvarStatus = document.createElement("button");
+    botaoSalvarStatus.type = "button";
+    botaoSalvarStatus.textContent = "Atualizar status";
+    botaoSalvarStatus.addEventListener("click", async () => {
+      if (seletorStatus.value === "falta_justificada" && !justificativa.value.trim()) {
+        justificativa.focus();
+        alert("Informe a justificativa da falta.");
+        return;
+      }
+
+      try {
+        await requisicao("atualizar_status", {
+          id: agendamento.id,
+          status: seletorStatus.value,
+          justificativa_falta: justificativa.value.trim()
+        });
+        await mostrarAgendamentos();
+      } catch (erro) {
+        alert(erro.message);
+      }
+    });
+
+    controles.append(seletorStatus, justificativa, botaoSalvarStatus);
+
     const botaoCancelar = document.createElement("button");
     botaoCancelar.type = "button";
     botaoCancelar.textContent = "Cancelar";
@@ -147,7 +210,7 @@ async function mostrarAgendamentos() {
       }
     });
 
-    div.append(info, botaoCancelar);
+    div.append(info, controles, botaoCancelar);
     lista.appendChild(div);
   });
 }

@@ -7,6 +7,7 @@ final class Agendamento
     private string $data;
     private string $horario;
     private ?string $observacao;
+    private ?string $justificativaFalta;
     private string $status;
     private ?string $dataCriacao;
     private int $clienteId;
@@ -22,7 +23,8 @@ final class Agendamento
         ?string $observacao = null,
         ?string $dataCriacao = null,
         ?int $adminId = null,
-        ?int $id = null
+        ?int $id = null,
+        ?string $justificativaFalta = null
     ) {
         $this->data = $data;
         $this->horario = $horario;
@@ -30,6 +32,7 @@ final class Agendamento
         $this->servicoId = $servicoId;
         $this->status = $status;
         $this->observacao = $observacao;
+        $this->justificativaFalta = $justificativaFalta;
         $this->dataCriacao = $dataCriacao;
         $this->adminId = $adminId;
         $this->id = $id;
@@ -53,6 +56,11 @@ final class Agendamento
     public function getObservacao(): ?string
     {
         return $this->observacao;
+    }
+
+    public function getJustificativaFalta(): ?string
+    {
+        return $this->justificativaFalta;
     }
 
     public function getStatus(): string

@@ -9,6 +9,14 @@ Auth::exigirAdmin();
 
 $agendamentos = [];
 $mensagemErro = "";
+$rotulosStatus = [
+    "pendente" => "Pendente",
+    "confirmado" => "Confirmado",
+    "concluido" => "Concluído",
+    "falta" => "Falta",
+    "falta_justificada" => "Falta com justificativa",
+    "cancelado" => "Cancelado"
+];
 
 try {
     $agendamentoService = new AgendamentoService();
@@ -48,10 +56,11 @@ try {
                         <th>ID</th>
                         <th>Data</th>
                         <th>Horário</th>
-                        <th>Cliente ID</th>
-                        <th>Serviço ID</th>
+                        <th>Cliente</th>
+                        <th>Serviço</th>
                         <th>Status</th>
                         <th>Observação</th>
+                        <th>Justificativa</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
@@ -61,10 +70,11 @@ try {
                             <td><?= Utils::escaparHtml($item["id"]) ?></td>
                             <td><?= Utils::escaparHtml($item["data"]) ?></td>
                             <td><?= Utils::escaparHtml($item["horario"]) ?></td>
-                            <td><?= Utils::escaparHtml($item["cliente_id"]) ?></td>
-                            <td><?= Utils::escaparHtml($item["servico_id"]) ?></td>
-                            <td><?= Utils::escaparHtml($item["status"]) ?></td>
+                            <td><?= Utils::escaparHtml($item["cliente_nome"] ?? "Cliente #{$item['cliente_id']}") ?></td>
+                            <td><?= Utils::escaparHtml($item["servico_nome"] ?? "Serviço #{$item['servico_id']}") ?></td>
+                            <td><?= Utils::escaparHtml($rotulosStatus[$item["status"]] ?? $item["status"]) ?></td>
                             <td><?= Utils::escaparHtml((string) ($item["observacao"] ?? "")) ?></td>
+                            <td><?= Utils::escaparHtml((string) ($item["justificativa_falta"] ?? "")) ?></td>
                             <td>
                                 <a href="agendamento-atualiza.php?id=<?= Utils::escaparHtml($item["id"]) ?>">Editar</a>
                                 |

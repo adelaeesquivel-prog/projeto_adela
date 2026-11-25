@@ -13,7 +13,7 @@ $mensagemErro = "";
 $mensagemSucesso = "";
 $agendamentoAtual = null;
 
-$statusPermitidos = ["pendente", "confirmado", "concluido", "cancelado"];
+$statusPermitidos = ["pendente", "confirmado", "concluido", "falta", "falta_justificada", "cancelado"];
 
 try {
     $agendamentoService = new AgendamentoService();
@@ -37,11 +37,14 @@ try {
         $status = trim((string) ($_POST["status"] ?? "pendente"));
         $observacaoTexto = trim((string) ($_POST["observacao"] ?? ""));
         $observacao = $observacaoTexto !== "" ? $observacaoTexto : null;
+        $justificativaFalta = trim((string) ($_POST["justificativa_falta"] ?? ""));
         $adminIdRaw = (int) ($_POST["admin_id"] ?? 0);
         $adminId = $adminIdRaw > 0 ? $adminIdRaw : null;
 
         if ($data === "" || $horario === "" || $clienteId <= 0 || $servicoId <= 0 || !in_array($status, $statusPermitidos, true)) {
             $mensagemErro = "Preencha data, horário, cliente ID, serviço ID e um status válido.";
+        } elseif ($status === "falta_justificada" && ($justificativaFalta === "" || mb_strlen($justificativaFalta) > 1000)) {
+            $mensagemErro = "Informe uma justificativa de até 1000 caracteres para a falta.";
         } else {
             $agendamento = new Agendamento(
                 $data,
@@ -52,7 +55,8 @@ try {
                 $observacao,
                 $agendamentoAtual["data_criacao"] ?? null,
                 $adminId,
-                $id
+                $id,
+                $status === "falta_justificada" ? $justificativaFalta : null
             );
 
             $agendamentoService->atualizar($agendamento);
@@ -118,9 +122,19 @@ try {
                 <div>
                     <label for="status">Status:</label><br>
                     <select id="status" name="status">
-                        <?php foreach ($statusPermitidos as $st): ?>
+                        <?php
+                        $rotulosStatus = [
+                            "pendente" => "Pendente",
+                            "confirmado" => "Confirmado",
+                            "concluido" => "Concluído",
+                            "falta" => "Falta",
+                            "falta_justificada" => "Falta com justificativa",
+                            "cancelado" => "Cancelado"
+                        ];
+                        foreach ($statusPermitidos as $st):
+                        ?>
                             <option value="<?= Utils::escaparHtml($st) ?>" <?= ($agendamentoAtual["status"] === $st) ? "selected" : "" ?>>
-                                <?= Utils::escaparHtml($st) ?>
+                                <?= Utils::escaparHtml($rotulosStatus[$st]) ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
@@ -134,6 +148,11 @@ try {
                 <div>
                     <label for="observacao">Observação (opcional):</label><br>
                     <textarea id="observacao" name="observacao" rows="3"><?= Utils::escaparHtml((string) ($agendamentoAtual["observacao"] ?? "")) ?></textarea>
+                </div>
+                <br>
+                <div>
+                    <label for="justificativa_falta">Justificativa da falta (obrigatória para o status correspondente):</label><br>
+                    <textarea id="justificativa_falta" name="justificativa_falta" rows="3" maxlength="1000"><?= Utils::escaparHtml((string) ($agendamentoAtual["justificativa_falta"] ?? "")) ?></textarea>
                 </div>
                 <br>
                 <button type="submit">Atualizar</button>

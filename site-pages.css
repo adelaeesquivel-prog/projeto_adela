@@ -104,6 +104,10 @@
 .account-message { min-height: 20px; color: #d6aa53; margin-top: 12px; }
 .account-primary { width: 100%; background: #c69b45; color: #111; border: 0; border-radius: 6px; padding: 12px; font-weight: bold; }
 .account-secondary { width: 100%; background: #303030; color: #fff; border: 1px solid #555; border-radius: 6px; padding: 12px; }
+.account-details { display: grid; gap: 10px; margin: 18px 0; }
+.account-detail { display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 12px; padding: 10px 12px; border: 1px solid #444; border-radius: 6px; background: #303030; }
+.account-detail-label { color: #bbb; }
+.account-detail-value { margin: 0; text-align: right; overflow-wrap: anywhere; }
 .account-history-button { display: flex; align-items: center; justify-content: center; gap: 8px; }
 .account-history-button svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .account-history-list { display: grid; gap: 10px; }
@@ -111,6 +115,10 @@
 .account-history-item h3 { margin: 0 0 8px; color: #d6aa53; }
 .account-history-item p { margin: 4px 0; }
 .account-history-status { color: #ccc; font-size: 14px; }
+.admin-appointment-controls { display: grid; grid-template-columns: minmax(170px, 1fr) minmax(180px, 2fr) auto; align-items: start; gap: 8px; margin-top: 10px; }
+.admin-appointment-controls select, .admin-appointment-controls textarea { width: 100%; padding: 9px; border: 1px solid #555; border-radius: 6px; background: #202020; color: #fff; }
+.admin-appointment-controls textarea { min-height: 40px; resize: vertical; }
+.admin-appointment-controls button { margin: 0; }
 .site-header .logo {
   display: inline-block;
   color: #d6aa53;
@@ -214,11 +222,12 @@
     align-self: center;
   }
   .login-icon {
-    width: fit-content;
-    min-width: min(136px, 100%);
+    width: 46px;
+    min-width: 46px;
+    max-width: 46px;
     height: 44px;
-    padding: 7px 11px;
-    gap: 7px;
+    padding: 7px;
+    justify-content: center;
   }
   .login-icon svg {
     width: 22px;
@@ -226,9 +235,11 @@
     flex: 0 0 auto;
   }
   .login-label {
-    max-width: min(95px, calc(100vw - 90px));
-    font-size: 13px;
+    display: none;
   }
+  .account-detail { grid-template-columns: 1fr; gap: 4px; }
+  .account-detail-value { text-align: left; }
+  .admin-appointment-controls { grid-template-columns: 1fr; }
   .site-nav {
     gap: 6px;
   }

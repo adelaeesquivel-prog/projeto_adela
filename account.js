@@ -37,6 +37,18 @@ function criarModal(conteudo) {
   return overlay;
 }
 
+function mascararEmail(email) {
+  const partes = String(email || "").split("@");
+  if (partes.length !== 2 || !partes[0] || !partes[1]) return "***";
+
+  const mascararParte = parte => parte.length > 2
+    ? `${parte[0]}***${parte.slice(-1)}`
+    : `${parte[0]}***`;
+  const dominio = partes[1].split(".");
+  const nomeDominio = dominio.shift();
+  return `${mascararParte(partes[0])}@${mascararParte(nomeDominio)}${dominio.length ? `.${dominio.join(".")}` : ""}`;
+}
+
 function mostrarFormulario(tipo = "entrar") {
   const registro = tipo === "cadastrar";
   const conteudo = `
@@ -137,8 +149,19 @@ function mostrarFormulario(tipo = "entrar") {
 async function mostrarContaLogada(conta) {
   const admin = conta.tipo === "admin";
   const conteudo = `
-    <h2>Olá, ${admin ? "Administrador" : conta.nome}</h2>
-    ${admin ? "<p>Acesso administrativo ativo.</p>" : `<p>${conta.email}</p><p>${conta.telefone}</p>`}
+    <h2 id="tituloConta"></h2>
+    ${admin ? "<p>Acesso administrativo ativo.</p>" : `
+      <section class="account-details" aria-label="Dados da conta">
+        <div class="account-detail">
+          <span class="account-detail-label">E-mail</span>
+          <p class="account-detail-value" id="emailConta"></p>
+        </div>
+        <div class="account-detail">
+          <span class="account-detail-label">Telefone</span>
+          <p class="account-detail-value" id="telefoneConta"></p>
+        </div>
+      </section>
+    `}
     ${admin ? "" : `<button class="account-secondary account-history-button" type="button" id="verHistorico">
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <rect x="3" y="5" width="18" height="16" rx="2"></rect>
@@ -150,6 +173,11 @@ async function mostrarContaLogada(conta) {
     <button class="account-secondary" type="button" id="logoutConta">Sair da conta</button>
   `;
   const modal = criarModal(conteudo);
+  modal.querySelector("#tituloConta").textContent = `Olá, ${admin ? "Administrador" : conta.nome}`;
+  if (!admin) {
+    modal.querySelector("#emailConta").textContent = mascararEmail(conta.email);
+    modal.querySelector("#telefoneConta").textContent = conta.telefone || "Não informado";
+  }
 
   const historico = modal.querySelector("#verHistorico");
   if (historico) {
@@ -212,9 +240,22 @@ async function mostrarHistoricoAgendamentos(conta) {
 
       const status = document.createElement("p");
       status.className = "account-history-status";
-      status.textContent = `Status: ${agendamento.status || "não informado"}`;
+      const rotulosStatus = {
+        pendente: "Pendente",
+        confirmado: "Confirmado",
+        concluido: "Concluído",
+        falta: "Falta",
+        falta_justificada: "Falta com justificativa",
+        cancelado: "Cancelado"
+      };
+      status.textContent = `Status: ${rotulosStatus[agendamento.status] || agendamento.status || "não informado"}`;
 
       item.append(servico, detalhes, status);
+      if (agendamento.justificativa_falta) {
+        const justificativa = document.createElement("p");
+        justificativa.textContent = `Justificativa: ${agendamento.justificativa_falta}`;
+        item.appendChild(justificativa);
+      }
       lista.appendChild(item);
     });
   } catch (erro) {
@@ -234,12 +275,14 @@ async function atualizarConta() {
     loginIcon.classList.toggle("logged", conta.autenticado);
     loginIcon.title = conta.autenticado ? `Conta: ${conta.nome}` : "Registrar ou entrar";
     loginIcon.dataset.logado = conta.autenticado ? "true" : "false";
+    loginIcon.setAttribute("aria-label", conta.autenticado ? "Abrir minha conta" : "Registrar ou entrar");
     if (rotulo) rotulo.textContent = conta.autenticado ? conta.nome : "Registrar";
     loginIcon.onclick = conta.autenticado
       ? () => mostrarContaLogada(conta)
       : () => mostrarFormulario("cadastrar");
   } catch (erro) {
     const rotulo = loginIcon.querySelector(".login-label");
+    loginIcon.setAttribute("aria-label", "Registrar ou entrar");
     if (rotulo) rotulo.textContent = "Registrar";
     loginIcon.onclick = () => mostrarFormulario("cadastrar");
   }

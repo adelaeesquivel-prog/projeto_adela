@@ -30,6 +30,15 @@ const HORARIOS = [
     '17:00', '17:30', '18:00',
 ];
 
+const STATUS_AGENDAMENTO = [
+    'pendente',
+    'confirmado',
+    'concluido',
+    'falta',
+    'falta_justificada',
+    'cancelado',
+];
+
 function responder(array $dados, int $status = 200): never
 {
     http_response_code($status);
@@ -314,6 +323,29 @@ try {
     }
 
     exigirAdminApi();
+
+    if ($acao === 'atualizar_status') {
+        $id = (int) ($entrada['id'] ?? 0);
+        $status = (string) ($entrada['status'] ?? '');
+        $justificativa = trim((string) ($entrada['justificativa_falta'] ?? ''));
+
+        if ($id <= 0 || !in_array($status, STATUS_AGENDAMENTO, true)) {
+            responder(['erro' => 'Selecione um agendamento e um status válido.'], 400);
+        }
+        if ($status === 'falta_justificada' && ($justificativa === '' || mb_strlen($justificativa) > 1000)) {
+            responder(['erro' => 'Informe uma justificativa de até 1000 caracteres para a falta.'], 400);
+        }
+        if ($agendamentoService->buscarPorId($id) === null) {
+            responder(['erro' => 'Agendamento não encontrado.'], 404);
+        }
+
+        $agendamentoService->atualizarStatus(
+            $id,
+            $status,
+            $status === 'falta_justificada' ? $justificativa : null
+        );
+        responder(['agendamentos' => $agendamentoService->listarTodos()]);
+    }
 
     if ($acao === 'cancelar') {
         $id = (int) ($entrada['id'] ?? 0);

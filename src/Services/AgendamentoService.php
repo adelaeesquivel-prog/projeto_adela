@@ -19,9 +19,13 @@ final class AgendamentoService
 
     public function listarTodos(): array
     {
-        $sql = "SELECT id, data, horario, observacao, status, data_criacao, cliente_id, admin_id, servico_id
-                FROM agendamento
-                ORDER BY data DESC, horario DESC";
+        $sql = "SELECT a.id, a.data, a.horario, a.observacao, a.status, a.justificativa_falta,
+                       a.data_criacao, a.cliente_id, a.admin_id, a.servico_id,
+                       c.nome AS cliente_nome, s.nome AS servico_nome
+                FROM agendamento a
+                LEFT JOIN cliente c ON c.id = a.cliente_id
+                LEFT JOIN servico s ON s.id = a.servico_id
+                ORDER BY a.data DESC, a.horario DESC";
 
         try {
             $consulta = $this->conexao->query($sql);
@@ -34,7 +38,8 @@ final class AgendamentoService
 
     public function listarPorCliente(int $clienteId): array
     {
-        $sql = "SELECT a.id, a.data, a.horario, a.status, a.servico_id, s.nome AS servico_nome
+        $sql = "SELECT a.id, a.data, a.horario, a.status, a.justificativa_falta,
+                       a.servico_id, s.nome AS servico_nome
                 FROM agendamento a
                 LEFT JOIN servico s ON s.id = a.servico_id
                 WHERE a.cliente_id = :cliente_id
@@ -53,8 +58,10 @@ final class AgendamentoService
 
     public function inserir(Agendamento $agendamento): void
     {
-        $sql = "INSERT INTO agendamento (data, horario, observacao, status, cliente_id, admin_id, servico_id)
-                VALUES (:data, :horario, :observacao, :status, :cliente_id, :admin_id, :servico_id)";
+        $sql = "INSERT INTO agendamento
+                    (data, horario, observacao, status, justificativa_falta, cliente_id, admin_id, servico_id)
+                VALUES
+                    (:data, :horario, :observacao, :status, :justificativa_falta, :cliente_id, :admin_id, :servico_id)";
 
         try {
             $consulta = $this->conexao->prepare($sql);
@@ -62,6 +69,7 @@ final class AgendamentoService
             $consulta->bindValue(":horario", $agendamento->getHorario());
             $consulta->bindValue(":observacao", $agendamento->getObservacao());
             $consulta->bindValue(":status", $agendamento->getStatus());
+            $consulta->bindValue(":justificativa_falta", $agendamento->getJustificativaFalta());
             $consulta->bindValue(":cliente_id", $agendamento->getClienteId());
             $consulta->bindValue(":admin_id", $agendamento->getAdminId());
             $consulta->bindValue(":servico_id", $agendamento->getServicoId());
@@ -74,7 +82,8 @@ final class AgendamentoService
 
     public function buscarPorId(int $id): ?array
     {
-        $sql = "SELECT id, data, horario, observacao, status, data_criacao, cliente_id, admin_id, servico_id
+        $sql = "SELECT id, data, horario, observacao, status, justificativa_falta,
+                       data_criacao, cliente_id, admin_id, servico_id
                 FROM agendamento
                 WHERE id = :id";
 
@@ -93,6 +102,7 @@ final class AgendamentoService
     {
         $sql = "UPDATE agendamento
                 SET data = :data, horario = :horario, observacao = :observacao, status = :status,
+                    justificativa_falta = :justificativa_falta,
                     cliente_id = :cliente_id, admin_id = :admin_id, servico_id = :servico_id
                 WHERE id = :id";
 
@@ -102,6 +112,7 @@ final class AgendamentoService
             $consulta->bindValue(":horario", $agendamento->getHorario());
             $consulta->bindValue(":observacao", $agendamento->getObservacao());
             $consulta->bindValue(":status", $agendamento->getStatus());
+            $consulta->bindValue(":justificativa_falta", $agendamento->getJustificativaFalta());
             $consulta->bindValue(":cliente_id", $agendamento->getClienteId());
             $consulta->bindValue(":admin_id", $agendamento->getAdminId());
             $consulta->bindValue(":servico_id", $agendamento->getServicoId());
@@ -110,6 +121,24 @@ final class AgendamentoService
         } catch (PDOException $e) {
             Utils::registrarLog($e);
             throw new Exception("Erro ao atualizar agendamento");
+        }
+    }
+
+    public function atualizarStatus(int $id, string $status, ?string $justificativaFalta): void
+    {
+        $sql = "UPDATE agendamento
+                SET status = :status, justificativa_falta = :justificativa_falta
+                WHERE id = :id";
+
+        try {
+            $consulta = $this->conexao->prepare($sql);
+            $consulta->bindValue(":status", $status);
+            $consulta->bindValue(":justificativa_falta", $justificativaFalta);
+            $consulta->bindValue(":id", $id, PDO::PARAM_INT);
+            $consulta->execute();
+        } catch (PDOException $e) {
+            Utils::registrarLog($e);
+            throw new Exception("Erro ao atualizar status do agendamento");
         }
     }
 
