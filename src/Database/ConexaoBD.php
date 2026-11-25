@@ -20,11 +20,10 @@ final class ConexaoBD
         if (!isset(self::$conexao)) {
             try {
                 self::$conexao = new PDO(
-                    "mysql:host=" . self::$servidor . ";dbname=" . self::$banco . ";charset=utf8mb4",
+                    "mysql:host=" . self::$servidor . ";port=3307;dbname=" . self::$banco . ";charset=utf8mb4",
                     self::$usuario,
                     self::$senha
-                );
-
+);
                 self::$conexao->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
                 self::$conexao->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
             } catch (PDOException $e) {
