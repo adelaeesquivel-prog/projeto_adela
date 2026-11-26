@@ -7,7 +7,7 @@
   <title>Léo Barbas | Início</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="site-pages.css">
-  <script src="account.js" defer></script>
+  <script src="account.js?v=20261126-phone-mask-3" defer></script>
 </head>
 <body>
    <?php require __DIR__ . '/includes/header.php'; ?>

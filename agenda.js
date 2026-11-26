@@ -42,6 +42,25 @@ function formatarTelefone(valor) {
   return `(${ddd}) ${numero.slice(0, tamanhoPrefixo)}-${numero.slice(tamanhoPrefixo)}`;
 }
 
+function atualizarPrecosOpcoesServico(conta = window.contaAtual) {
+  const select = document.getElementById("servico");
+  if (!select) return;
+
+  const clienteLogado = conta && conta.autenticado && conta.tipo === "cliente";
+  servicos.forEach(servico => {
+    const option = Array.from(select.options).find(item => item.value === String(servico.id));
+    if (!option) return;
+
+    let preco = Number(servico.preco);
+    let desconto = "";
+    if (clienteLogado) {
+      preco = Math.round(preco * 0.95 * 100) / 100;
+      desconto = " (5% de desconto)";
+    }
+    option.textContent = `${servico.nome} - R$ ${preco.toFixed(2).replace(".", ",")}${desconto}`;
+  });
+}
+
 async function carregarServicos() {
   const select = document.getElementById("servico");
   if (!select) return;
@@ -79,6 +98,7 @@ async function carregarServicos() {
     }
     select.appendChild(option);
   });
+  atualizarPrecosOpcoesServico();
 }
 
 async function carregarHorarios() {
@@ -227,6 +247,150 @@ async function mostrarAgendamentos() {
   });
 }
 
+async function mostrarClientes() {
+  const lista = document.getElementById("listaClientes");
+  lista.replaceChildren();
+
+  let resultado;
+  try {
+    resultado = await requisicao("clientes", null, "GET");
+  } catch (erro) {
+    const mensagem = document.createElement("p");
+    mensagem.className = "account-message";
+    mensagem.textContent = `Não foi possível carregar os clientes: ${erro.message}`;
+    lista.appendChild(mensagem);
+    return;
+  }
+
+  if (!resultado.clientes.length) {
+    const vazio = document.createElement("p");
+    vazio.textContent = "Nenhuma conta de cliente cadastrada.";
+    lista.appendChild(vazio);
+    return;
+  }
+
+  resultado.clientes.forEach(cliente => {
+    const item = document.createElement("article");
+    item.className = "admin-client";
+
+    const informacoes = document.createElement("div");
+    informacoes.className = "admin-client-info";
+    const nome = document.createElement("strong");
+    nome.textContent = cliente.nome;
+    const email = document.createElement("p");
+    email.textContent = `E-mail: ${cliente.email}`;
+    const telefone = document.createElement("p");
+    telefone.textContent = `Telefone: ${cliente.telefone}`;
+    const agendamentos = Number(cliente.total_agendamentos) || 0;
+    const total = document.createElement("p");
+    total.textContent = `Agendamentos vinculados: ${agendamentos}`;
+    informacoes.append(nome, email, telefone, total);
+
+    const botaoExcluir = document.createElement("button");
+    botaoExcluir.type = "button";
+    botaoExcluir.textContent = "Excluir conta";
+    botaoExcluir.addEventListener("click", async () => {
+      const impacto = agendamentos > 0
+        ? ` e seus ${agendamentos} agendamento(s)`
+        : "";
+      if (!confirm(`Excluir a conta de ${cliente.nome}${impacto}? Esta ação não pode ser desfeita.`)) return;
+
+      try {
+        await requisicao("excluir_cliente", { id: cliente.id });
+        await Promise.all([mostrarClientes(), mostrarAgendamentos(), carregarHorarios()]);
+      } catch (erro) {
+        alert(erro.message);
+      }
+    });
+
+    item.append(informacoes, botaoExcluir);
+    lista.appendChild(item);
+  });
+}
+
+async function carregarPedidosSenha() {
+  const contador = document.getElementById("contadorPedidosSenha");
+  const lista = document.getElementById("listaPedidosSenha");
+  const secao = document.getElementById("pedidosSenha");
+  if (!contador || !lista || !secao) return;
+
+  try {
+    const resultado = await requisicao("pedidos_troca_senha", null, "GET");
+    const solicitacoes = resultado.solicitacoes;
+    contador.textContent = String(solicitacoes.length);
+    contador.setAttribute("aria-label", `${solicitacoes.length} pedidos pendentes`);
+    if (secao.classList.contains("hidden")) return;
+
+    lista.replaceChildren();
+    if (!solicitacoes.length) {
+      const vazio = document.createElement("p");
+      vazio.textContent = "Não há pedidos pendentes.";
+      lista.appendChild(vazio);
+      return;
+    }
+
+    solicitacoes.forEach(solicitacao => {
+      const item = document.createElement("article");
+      item.className = "password-request";
+
+      const nome = document.createElement("p");
+      nome.textContent = `Nome: ${solicitacao.nome}`;
+      const email = document.createElement("p");
+      email.textContent = `E-mail: ${solicitacao.email}`;
+      const telefone = document.createElement("p");
+      telefone.textContent = `Telefone: ${solicitacao.telefone}`;
+      const data = document.createElement("p");
+      data.className = "password-request-date";
+      data.textContent = `Recebido em ${solicitacao.criado_em}`;
+      const alerta = document.createElement("p");
+      alerta.className = "password-request-warning";
+      alerta.textContent = "Confirme a identidade do cliente pelo telefone cadastrado antes de aprovar.";
+
+      const acoes = document.createElement("div");
+      acoes.className = "password-request-actions";
+      const aprovar = document.createElement("button");
+      aprovar.type = "button";
+      aprovar.textContent = "Aprovar troca";
+      aprovar.addEventListener("click", async () => {
+        if (!confirm("Confirme que verificou a identidade do cliente pelo telefone cadastrado. Aprovará a nova senha.")) return;
+        try {
+          await requisicao("aprovar_troca_senha", { id: solicitacao.id });
+          await carregarPedidosSenha();
+        } catch (erro) {
+          alert(erro.message);
+        }
+      });
+
+      const recusar = document.createElement("button");
+      recusar.type = "button";
+      recusar.textContent = "Recusar";
+      recusar.addEventListener("click", async () => {
+        if (!confirm("Deseja recusar este pedido de troca de senha?")) return;
+        try {
+          await requisicao("recusar_troca_senha", { id: solicitacao.id });
+          await carregarPedidosSenha();
+        } catch (erro) {
+          alert(erro.message);
+        }
+      });
+
+      acoes.append(aprovar, recusar);
+      item.append(nome, email, telefone, data, alerta, acoes);
+      lista.appendChild(item);
+    });
+  } catch (erro) {
+    contador.textContent = "!";
+    contador.setAttribute("aria-label", "Não foi possível carregar os pedidos");
+    if (secao.classList.contains("hidden")) return;
+
+    lista.replaceChildren();
+    const mensagem = document.createElement("p");
+    mensagem.className = "account-message";
+    mensagem.textContent = erro.message;
+    lista.appendChild(mensagem);
+  }
+}
+
 async function mostrarServicos() {
   const resultado = await requisicao("servicos", null, "GET");
   servicos = resultado.servicos;
@@ -318,7 +482,13 @@ async function abrirAdmin() {
   document.getElementById("areaCliente").classList.add("hidden");
   document.getElementById("linkAdmin").classList.add("hidden");
   document.getElementById("areaAdmin").classList.remove("hidden");
+  const botaoPedidosSenha = document.getElementById("btnPedidosSenha");
+  const secaoPedidosSenha = document.getElementById("pedidosSenha");
+  secaoPedidosSenha.classList.remove("hidden");
+  botaoPedidosSenha.setAttribute("aria-expanded", "true");
+  await carregarPedidosSenha();
   await mostrarAgendamentos();
+  await mostrarClientes();
   await mostrarServicos();
 }
 
@@ -329,6 +499,10 @@ function fecharAdmin() {
 }
 
 function configurarEventos() {
+  document.addEventListener("conta:atualizada", evento => {
+    atualizarPrecosOpcoesServico(evento.detail);
+  });
+
   const campoData = document.getElementById("data");
   if (campoData) {
     const hoje = new Date();
@@ -395,6 +569,64 @@ function configurarEventos() {
   const btnVoltar = document.getElementById("btnVoltar");
   if (btnVoltar) {
     btnVoltar.addEventListener("click", fecharAdmin);
+  }
+
+  const formAlteracaoSenhaAdmin = document.getElementById("formAlteracaoSenhaAdmin");
+  if (formAlteracaoSenhaAdmin) {
+    formAlteracaoSenhaAdmin.addEventListener("submit", async evento => {
+      evento.preventDefault();
+      const senhaAtual = document.getElementById("senhaAtualAdmin");
+      const senhaNova = document.getElementById("senhaNovaAdmin");
+      const confirmacao = document.getElementById("confirmarSenhaNovaAdmin");
+      const mensagem = document.getElementById("mensagemAlteracaoSenhaAdmin");
+      mensagem.textContent = "";
+
+      if (senhaNova.value !== confirmacao.value) {
+        mensagem.textContent = "As senhas não conferem.";
+        confirmacao.focus();
+        return;
+      }
+
+      try {
+        const resultado = await requisicao("alterar_senha_admin", {
+          senha_atual: senhaAtual.value,
+          senha_nova: senhaNova.value
+        });
+        mensagem.textContent = resultado.mensagem;
+        senhaAtual.value = "";
+        senhaNova.value = "";
+        confirmacao.value = "";
+      } catch (erro) {
+        mensagem.textContent = erro.message;
+      }
+    });
+  }
+
+  const btnAtualizarClientes = document.getElementById("btnAtualizarClientes");
+  if (btnAtualizarClientes) {
+    btnAtualizarClientes.addEventListener("click", async () => {
+      try {
+        await mostrarClientes();
+      } catch (erro) {
+        alert(erro.message);
+      }
+    });
+  }
+
+  const btnPedidosSenha = document.getElementById("btnPedidosSenha");
+  if (btnPedidosSenha) {
+    btnPedidosSenha.addEventListener("click", async () => {
+      const secao = document.getElementById("pedidosSenha");
+      const expandido = btnPedidosSenha.getAttribute("aria-expanded") === "true";
+      secao.classList.toggle("hidden", expandido);
+      btnPedidosSenha.setAttribute("aria-expanded", String(!expandido));
+      if (!expandido) await carregarPedidosSenha();
+    });
+
+    window.setInterval(() => {
+      const painel = document.getElementById("areaAdmin");
+      if (painel && !painel.classList.contains("hidden")) carregarPedidosSenha();
+    }, 30000);
   }
 
   const btnCadastrarServico = document.getElementById("btnCadastrarServico");

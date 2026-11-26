@@ -38,3 +38,88 @@ Arquivo: C:\backend\projetoIntegrador\projeto_adela\src\Services\ServicoService.
 Linha: 29
 Mensagem: Erro ao listar serviços
 
+[2026-11-26 08:46:20]
+Arquivo: C:\backend\projetoIntegrador\projeto_adela\src\Services\SolicitacaoTrocaSenhaService.php
+Linha: 65
+Mensagem: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'leo_barbas.solicitacao_troca_senha' doesn't exist
+
+[2026-11-26 08:46:23]
+Arquivo: C:\backend\projetoIntegrador\projeto_adela\src\Services\SolicitacaoTrocaSenhaService.php
+Linha: 65
+Mensagem: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'leo_barbas.solicitacao_troca_senha' doesn't exist
+
+[2026-11-26 08:46:37]
+Arquivo: C:\backend\projetoIntegrador\projeto_adela\src\Services\SolicitacaoTrocaSenhaService.php
+Linha: 65
+Mensagem: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'leo_barbas.solicitacao_troca_senha' doesn't exist
+
+[2026-11-26 08:47:30]
+Arquivo: C:\backend\projetoIntegrador\projeto_adela\src\Services\SolicitacaoTrocaSenhaService.php
+Linha: 65
+Mensagem: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'leo_barbas.solicitacao_troca_senha' doesn't exist
+
+[2026-11-26 08:47:30]
+Arquivo: C:\backend\projetoIntegrador\projeto_adela\src\Services\SolicitacaoTrocaSenhaService.php
+Linha: 65
+Mensagem: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'leo_barbas.solicitacao_troca_senha' doesn't exist
+
+[2026-11-26 08:47:31]
+Arquivo: C:\backend\projetoIntegrador\projeto_adela\src\Services\SolicitacaoTrocaSenhaService.php
+Linha: 65
+Mensagem: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'leo_barbas.solicitacao_troca_senha' doesn't exist
+
+[2026-11-26 08:48:34]
+Arquivo: C:\backend\projetoIntegrador\projeto_adela\src\Services\SolicitacaoTrocaSenhaService.php
+Linha: 65
+Mensagem: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'leo_barbas.solicitacao_troca_senha' doesn't exist
+
+[2026-11-26 08:48:35]
+Arquivo: C:\backend\projetoIntegrador\projeto_adela\src\Services\SolicitacaoTrocaSenhaService.php
+Linha: 65
+Mensagem: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'leo_barbas.solicitacao_troca_senha' doesn't exist
+
+[2026-11-26 08:49:04]
+Arquivo: C:\backend\projetoIntegrador\projeto_adela\src\Services\SolicitacaoTrocaSenhaService.php
+Linha: 65
+Mensagem: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'leo_barbas.solicitacao_troca_senha' doesn't exist
+
+[2026-11-26 08:49:34]
+Arquivo: C:\backend\projetoIntegrador\projeto_adela\src\Services\SolicitacaoTrocaSenhaService.php
+Linha: 65
+Mensagem: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'leo_barbas.solicitacao_troca_senha' doesn't exist
+
+[2026-11-26 08:50:04]
+Arquivo: C:\backend\projetoIntegrador\projeto_adela\src\Services\SolicitacaoTrocaSenhaService.php
+Linha: 65
+Mensagem: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'leo_barbas.solicitacao_troca_senha' doesn't exist
+
+[2026-11-26 08:50:34]
+Arquivo: C:\backend\projetoIntegrador\projeto_adela\src\Services\SolicitacaoTrocaSenhaService.php
+Linha: 65
+Mensagem: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'leo_barbas.solicitacao_troca_senha' doesn't exist
+
+[2026-11-26 08:50:45]
+Arquivo: C:\backend\projetoIntegrador\projeto_adela\src\Services\SolicitacaoTrocaSenhaService.php
+Linha: 65
+Mensagem: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'leo_barbas.solicitacao_troca_senha' doesn't exist
+
+[2026-11-26 08:50:47]
+Arquivo: C:\backend\projetoIntegrador\projeto_adela\src\Services\SolicitacaoTrocaSenhaService.php
+Linha: 65
+Mensagem: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'leo_barbas.solicitacao_troca_senha' doesn't exist
+
+[2026-11-26 08:51:52]
+Arquivo: C:\backend\projetoIntegrador\projeto_adela\src\Services\SolicitacaoTrocaSenhaService.php
+Linha: 65
+Mensagem: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'leo_barbas.solicitacao_troca_senha' doesn't exist
+
+[2026-11-26 08:51:54]
+Arquivo: C:\backend\projetoIntegrador\projeto_adela\src\Services\SolicitacaoTrocaSenhaService.php
+Linha: 65
+Mensagem: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'leo_barbas.solicitacao_troca_senha' doesn't exist
+
+[2026-11-26 08:52:22]
+Arquivo: C:\backend\projetoIntegrador\projeto_adela\src\Services\SolicitacaoTrocaSenhaService.php
+Linha: 65
+Mensagem: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'leo_barbas.solicitacao_troca_senha' doesn't exist
+

@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="site-pages.css">
     <script src="agenda.js" defer></script>
-    <script src="account.js" defer></script>
+    <script src="account.js?v=20261126-phone-mask-3" defer></script>
 </head>
 <body>
    <?php require __DIR__ . '/includes/header.php'; ?>
@@ -45,8 +45,45 @@
       <h2>Painel administrativo</h2>
       <button type="button" id="btnVoltar">Voltar ao site</button>
 
+      <section class="admin-password-change" aria-labelledby="tituloAlterarSenhaAdmin">
+        <h3 id="tituloAlterarSenhaAdmin">Alterar minha senha</h3>
+        <form id="formAlteracaoSenhaAdmin">
+          <label for="senhaAtualAdmin">Senha atual</label>
+          <input id="senhaAtualAdmin" type="password" required autocomplete="current-password">
+
+          <label for="senhaNovaAdmin">Nova senha</label>
+          <input id="senhaNovaAdmin" type="password" required minlength="6" maxlength="100" autocomplete="new-password">
+
+          <label for="confirmarSenhaNovaAdmin">Confirme a nova senha</label>
+          <input id="confirmarSenhaNovaAdmin" type="password" required minlength="6" maxlength="100" autocomplete="new-password">
+
+          <p class="account-message" id="mensagemAlteracaoSenhaAdmin" role="status"></p>
+          <button type="submit">Alterar senha</button>
+        </form>
+      </section>
+
+      <div class="admin-notifications">
+        <button type="button" class="admin-notifications-button" id="btnPedidosSenha" aria-expanded="false" aria-controls="pedidosSenha">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"></path>
+          </svg>
+          <span>Pedidos de troca de senha</span>
+          <span class="admin-notification-count" id="contadorPedidosSenha">0</span>
+        </button>
+        <section class="admin-password-requests hidden" id="pedidosSenha" aria-label="Pedidos pendentes de troca de senha">
+          <h3>Solicitações pendentes</h3>
+          <div id="listaPedidosSenha" role="status"></div>
+        </section>
+      </div>
+
       <h3 class="subtitulo">Agendamentos</h3>
       <div id="listaAgendamentos"></div>
+      <hr>
+
+      <h3 class="subtitulo">Contas de clientes</h3>
+      <p>Excluir uma conta também remove todos os agendamentos vinculados a ela.</p>
+      <button type="button" id="btnAtualizarClientes">Atualizar lista de clientes</button>
+      <div id="listaClientes" role="status"></div>
       <hr>
 
       <h3>Cadastro de serviços</h3>

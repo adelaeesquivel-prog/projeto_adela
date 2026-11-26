@@ -11,6 +11,7 @@ use LeoBarbas\Services\AdministradorService;
 use LeoBarbas\Services\AgendamentoService;
 use LeoBarbas\Services\ClienteService;
 use LeoBarbas\Services\ServicoService;
+use LeoBarbas\Services\SolicitacaoTrocaSenhaService;
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start([
@@ -85,6 +86,7 @@ $servicoService = new ServicoService();
 $agendamentoService = new AgendamentoService();
 $clienteService = new ClienteService();
 $adminService = new AdministradorService();
+$solicitacaoTrocaSenhaService = new SolicitacaoTrocaSenhaService();
 
 $metodo = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $acao = $_GET['acao'] ?? '';
@@ -112,6 +114,11 @@ try {
 
         if ($acao === 'admin') {
             responder(['autenticado' => Auth::usuarioEhAdmin()]);
+        }
+
+        if ($acao === 'pedidos_troca_senha') {
+            exigirAdminApi();
+            responder(['solicitacoes' => $solicitacaoTrocaSenhaService->listarPendentes()]);
         }
 
         if ($acao === 'conta') {
@@ -154,6 +161,11 @@ try {
             responder(['agendamentos' => $agendamentoService->listarTodos()]);
         }
 
+        if ($acao === 'clientes') {
+            exigirAdminApi();
+            responder(['clientes' => $clienteService->listarParaAdmin()]);
+        }
+
         responder(['erro' => 'Ação não encontrada.'], 404);
     }
 
@@ -164,6 +176,62 @@ try {
 
     $entrada = lerCorpo();
     $acao = (string) ($entrada['acao'] ?? '');
+
+    if ($acao === 'solicitar_troca_senha') {
+        $email = mb_strtolower(trim((string) ($entrada['email'] ?? '')));
+        $telefone = normalizarTelefone((string) ($entrada['telefone'] ?? ''));
+        $senhaNova = $entrada['senha_nova'] ?? null;
+
+        if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            responder(['erro' => 'Informe um e-mail válido ou deixe o campo vazio.'], 400);
+        }
+        if ($telefone === null) {
+            responder(['erro' => 'Informe o telefone cadastrado com DDD e 10 ou 11 dígitos.'], 400);
+        }
+        if (!is_string($senhaNova) || mb_strlen($senhaNova) < 6 || mb_strlen($senhaNova) > 100) {
+            responder(['erro' => 'A nova senha deve ter entre 6 e 100 caracteres.'], 400);
+        }
+
+        if ($email !== '') {
+            $cliente = $clienteService->buscarPorEmail($email);
+            $telefoneCliente = $cliente !== null
+                ? normalizarTelefone((string) $cliente['telefone'])
+                : null;
+            $clientesCorrespondentes = $cliente !== null
+                && $telefoneCliente !== null
+                && hash_equals($telefoneCliente, $telefone)
+                    ? [$cliente]
+                    : [];
+        } else {
+            $clientesCorrespondentes = array_values(array_filter(
+                $clienteService->listarTodos(),
+                static function (array $cliente) use ($telefone): bool {
+                    $telefoneCliente = normalizarTelefone((string) $cliente['telefone']);
+                    return $telefoneCliente !== null && hash_equals($telefoneCliente, $telefone);
+                }
+            ));
+        }
+
+        if (count($clientesCorrespondentes) === 0) {
+            responder(['erro' => 'Não encontramos uma conta com esse telefone. Confira o número cadastrado.'], 404);
+        }
+        if (count($clientesCorrespondentes) > 1) {
+            responder(['erro' => 'Mais de uma conta usa esse telefone. Informe o e-mail cadastrado para identificar sua conta.'], 409);
+        }
+
+        $cliente = $clientesCorrespondentes[0];
+        $criada = $solicitacaoTrocaSenhaService->criar(
+            (int) $cliente['id'],
+            password_hash($senhaNova, PASSWORD_DEFAULT)
+        );
+        if (!$criada) {
+            responder(['erro' => 'Já existe um pedido de troca de senha aguardando aprovação para esta conta.'], 409);
+        }
+
+        responder([
+            'mensagem' => 'Pedido enviado ao administrador. A senha só será alterada após a aprovação.',
+        ]);
+    }
 
     if ($acao === 'login') {
         $tipo = (string) ($entrada['tipo'] ?? 'admin');
@@ -323,6 +391,59 @@ try {
     }
 
     exigirAdminApi();
+
+    if ($acao === 'alterar_senha_admin') {
+        $senhaAtual = $entrada['senha_atual'] ?? null;
+        $senhaNova = $entrada['senha_nova'] ?? null;
+        $administradorId = (int) ($_SESSION['id'] ?? 0);
+
+        if ($administradorId <= 0 || !is_string($senhaAtual) || $senhaAtual === '') {
+            responder(['erro' => 'Informe sua senha atual para continuar.'], 400);
+        }
+        if (!is_string($senhaNova) || mb_strlen($senhaNova) < 6 || mb_strlen($senhaNova) > 100) {
+            responder(['erro' => 'A nova senha deve ter entre 6 e 100 caracteres.'], 400);
+        }
+
+        $administrador = $adminService->buscarPorId($administradorId);
+        if ($administrador === null || !password_verify($senhaAtual, $administrador['senha'])) {
+            responder(['erro' => 'A senha atual está incorreta.'], 401);
+        }
+        if (!$adminService->alterarSenha(
+            $administradorId,
+            password_hash($senhaNova, PASSWORD_DEFAULT)
+        )) {
+            responder(['erro' => 'Conta administrativa não encontrada.'], 404);
+        }
+
+        responder(['mensagem' => 'Senha alterada com sucesso.']);
+    }
+
+    if ($acao === 'excluir_cliente') {
+        $id = (int) ($entrada['id'] ?? 0);
+        if ($id <= 0) {
+            responder(['erro' => 'Selecione um cliente válido.'], 400);
+        }
+        if (!$clienteService->excluir($id)) {
+            responder(['erro' => 'Cliente não encontrado.'], 404);
+        }
+
+        responder(['mensagem' => 'Conta e agendamentos excluídos com sucesso.']);
+    }
+
+    if ($acao === 'aprovar_troca_senha' || $acao === 'recusar_troca_senha') {
+        $solicitacaoId = (int) ($entrada['id'] ?? 0);
+        $administradorId = (int) ($_SESSION['id'] ?? 0);
+        if ($solicitacaoId <= 0 || $administradorId <= 0) {
+            responder(['erro' => 'Pedido de troca de senha inválido.'], 400);
+        }
+
+        $aprovada = $acao === 'aprovar_troca_senha';
+        if (!$solicitacaoTrocaSenhaService->resolver($solicitacaoId, $administradorId, $aprovada)) {
+            responder(['erro' => 'Este pedido já foi processado ou não existe.'], 409);
+        }
+
+        responder(['solicitacoes' => $solicitacaoTrocaSenhaService->listarPendentes()]);
+    }
 
     if ($acao === 'atualizar_status') {
         $id = (int) ($entrada['id'] ?? 0);

@@ -30,6 +30,23 @@ final class ClienteService
         }
     }
 
+    public function listarParaAdmin(): array
+    {
+        $sql = "SELECT c.id, c.nome, c.email, c.telefone, COUNT(a.id) AS total_agendamentos
+                FROM cliente c
+                LEFT JOIN agendamento a ON a.cliente_id = c.id
+                GROUP BY c.id, c.nome, c.email, c.telefone
+                ORDER BY c.nome";
+
+        try {
+            $consulta = $this->conexao->query($sql);
+            return $consulta->fetchAll();
+        } catch (PDOException $e) {
+            Utils::registrarLog($e);
+            throw new Exception("Erro ao listar clientes para administração");
+        }
+    }
+
     public function inserir(Cliente $cliente): void
     {
         $sql = "INSERT INTO cliente (nome, email, senha, telefone)
@@ -83,17 +100,35 @@ final class ClienteService
         }
     }
 
-    public function excluir(int $id): void
+    public function excluir(int $id): bool
     {
-        $sql = "DELETE FROM cliente WHERE id = :id";
-
         try {
-            $consulta = $this->conexao->prepare($sql);
-            $consulta->bindValue(":id", $id);
-            $consulta->execute();
+            $this->conexao->beginTransaction();
+
+            $excluirAgendamentos = $this->conexao->prepare(
+                "DELETE FROM agendamento WHERE cliente_id = :cliente_id"
+            );
+            $excluirAgendamentos->bindValue(":cliente_id", $id, PDO::PARAM_INT);
+            $excluirAgendamentos->execute();
+
+            $excluirCliente = $this->conexao->prepare(
+                "DELETE FROM cliente WHERE id = :id"
+            );
+            $excluirCliente->bindValue(":id", $id, PDO::PARAM_INT);
+            $excluirCliente->execute();
+            if ($excluirCliente->rowCount() !== 1) {
+                $this->conexao->rollBack();
+                return false;
+            }
+
+            $this->conexao->commit();
+            return true;
         } catch (PDOException $e) {
+            if ($this->conexao->inTransaction()) {
+                $this->conexao->rollBack();
+            }
             Utils::registrarLog($e);
-            throw new Exception("Erro ao excluir cliente");
+            throw new Exception("Erro ao excluir cliente e agendamentos");
         }
     }
 

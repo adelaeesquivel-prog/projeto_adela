@@ -104,6 +104,21 @@
 .account-tab-admin svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .account-tab.active { background: #c69b45; color: #111; border-color: #c69b45; }
 .account-admin-notice { margin: 0 0 14px; padding: 10px 12px; border-left: 3px solid #c69b45; border-radius: 4px; background: #30291d; color: #f0d59a; font-size: 14px; line-height: 1.5; }
+.admin-notifications { margin: 18px 0 24px; }
+.admin-notifications-button { display: flex; align-items: center; gap: 10px; width: 100%; margin: 0; border: 1px solid #5b4929; background: #202020; color: #f0d59a; text-align: left; }
+.admin-notifications-button svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: 0 0 auto; }
+.admin-notification-count { min-width: 24px; margin-left: auto; padding: 3px 7px; border-radius: 12px; background: #c69b45; color: #111; text-align: center; font-size: 13px; }
+.admin-password-change { margin: 18px 0 24px; padding: 16px; border: 1px solid #444; border-radius: 8px; background: #181818; }
+.admin-password-change h3 { color: #d6aa53; }
+.admin-password-requests { margin-top: 12px; padding: 16px; border: 1px solid #444; border-radius: 8px; background: #181818; }
+.admin-password-requests h3 { color: #d6aa53; }
+.password-request { margin: 12px 0; padding: 14px; border: 1px solid #444; border-radius: 8px; background: #252525; overflow-wrap: anywhere; }
+.password-request p { margin: 4px 0; }
+.password-request-date { color: #aaa; font-size: 13px; }
+.password-request-warning { color: #f0d59a; font-size: 14px; }
+.password-request-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.password-request-actions button { margin: 8px 0 0; }
+.password-request-actions button:last-child { background: #8d3434; color: #fff; }
 .account-message { min-height: 20px; color: #d6aa53; margin-top: 12px; }
 .account-primary { width: 100%; background: #c69b45; color: #111; border: 0; border-radius: 6px; padding: 12px; font-weight: bold; }
 .account-secondary { width: 100%; background: #303030; color: #fff; border: 1px solid #555; border-radius: 6px; padding: 12px; }
@@ -111,6 +126,7 @@
 .account-detail { display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 12px; padding: 10px 12px; border: 1px solid #444; border-radius: 6px; background: #303030; }
 .account-detail-label { color: #bbb; }
 .account-detail-value { margin: 0; text-align: right; overflow-wrap: anywhere; }
+.account-discount-notice { margin: 0 0 14px; padding: 10px 12px; border-left: 3px solid #c69b45; border-radius: 4px; background: #30291d; color: #f0d59a; font-size: 14px; line-height: 1.5; }
 .account-history-button { display: flex; align-items: center; justify-content: center; gap: 8px; }
 .account-history-button svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .account-history-list { display: grid; gap: 10px; }
@@ -122,6 +138,10 @@
 .admin-appointment-controls select, .admin-appointment-controls textarea { width: 100%; padding: 9px; border: 1px solid #555; border-radius: 6px; background: #202020; color: #fff; }
 .admin-appointment-controls textarea { min-height: 40px; resize: vertical; }
 .admin-appointment-controls button { margin: 0; }
+.admin-client { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 12px 0; padding: 14px; border: 1px solid #444; border-radius: 8px; background: #252525; }
+.admin-client-info { min-width: 0; overflow-wrap: anywhere; }
+.admin-client-info p { margin: 4px 0; }
+.admin-client button { flex: 0 0 auto; margin: 0; background: #8d3434; color: #fff; }
 .site-header .logo {
   display: inline-block;
   color: #d6aa53;
@@ -211,7 +231,11 @@
 .page-heading { text-align: center; margin-bottom: 35px; }
 .page-heading p { margin: 0 auto; }
 .service-card { display: flex; flex-direction: column; min-height: 190px; }
-.service-card .price { color: #d6aa53; font-size: 23px; font-weight: bold; margin-top: auto; padding-top: 18px; }
+.service-card .price { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; color: #d6aa53; font-size: 23px; font-weight: bold; margin-top: auto; padding-top: 18px; }
+.price-original { color: #aaa; font-size: 15px; font-weight: normal; text-decoration: line-through; }
+.price-discounted { color: #d6aa53; }
+.price-discount-label { color: #ccc; font-size: 12px; font-weight: normal; }
+.discount-notice { margin-top: 12px; color: #f0d59a; font-size: 14px; }
 .empty-services { color: #ccc; grid-column: 1 / -1; text-align: center; padding: 30px; }
 .site-footer { text-align: center; color: #888; padding: 25px; background: #080808; }
 @media (max-width: 700px) {
@@ -249,6 +273,8 @@
   .account-detail { grid-template-columns: 1fr; gap: 4px; }
   .account-detail-value { text-align: left; }
   .admin-appointment-controls { grid-template-columns: 1fr; }
+  .admin-client { align-items: stretch; flex-direction: column; }
+  .admin-client button { width: 100%; }
   .site-nav {
     gap: 6px;
   }

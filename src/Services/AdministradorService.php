@@ -81,6 +81,22 @@ final class AdministradorService
         }
     }
 
+    public function alterarSenha(int $id, string $senhaHash): bool
+    {
+        $sql = "UPDATE administrador SET senha = :senha WHERE id = :id";
+
+        try {
+            $consulta = $this->conexao->prepare($sql);
+            $consulta->bindValue(":senha", $senhaHash);
+            $consulta->bindValue(":id", $id, PDO::PARAM_INT);
+            $consulta->execute();
+            return $consulta->rowCount() === 1;
+        } catch (PDOException $e) {
+            Utils::registrarLog($e);
+            throw new Exception("Erro ao alterar senha do administrador");
+        }
+    }
+
     public function excluir(int $id): void
     {
         $sql = "DELETE FROM administrador WHERE id = :id";

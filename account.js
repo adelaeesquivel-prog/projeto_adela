@@ -1,4 +1,22 @@
 const loginIcon = document.getElementById("loginIcon");
+window.contaAtual = { autenticado: false };
+
+function publicarConta(conta) {
+  window.contaAtual = conta;
+  document.dispatchEvent(new CustomEvent("conta:atualizada", { detail: conta }));
+}
+
+function formatarTelefoneConta(valor) {
+  const digitos = String(valor || "").replace(/\D/g, "").slice(0, 11);
+  if (digitos.length <= 2) return digitos ? `(${digitos}` : "";
+
+  const ddd = digitos.slice(0, 2);
+  const numero = digitos.slice(2);
+  const tamanhoPrefixo = digitos.length > 10 ? 5 : 4;
+  if (numero.length <= tamanhoPrefixo) return `(${ddd}) ${numero}`;
+
+  return `(${ddd}) ${numero.slice(0, tamanhoPrefixo)}-${numero.slice(tamanhoPrefixo)}`;
+}
 
 async function requisicaoConta(acao, dados = null, metodo = "POST") {
   let url = `api.php?acao=${encodeURIComponent(acao)}`;
@@ -71,7 +89,7 @@ function mostrarFormulario(tipo = "entrar") {
         <label for="contaNome">Nome</label>
         <input id="contaNome" type="text" maxlength="120" autocomplete="name">
         <label for="contaTelefone">Telefone</label>
-        <input id="contaTelefone" type="tel" minlength="10" maxlength="11" pattern="[0-9]{10,11}" inputmode="numeric" placeholder="DDD + número" autocomplete="tel">
+        <input id="contaTelefone" type="tel" ${registro ? "required" : ""} minlength="14" maxlength="15" pattern="\\([0-9]{2}\\) [0-9]{4,5}-[0-9]{4}" inputmode="numeric" placeholder="(11) 99999-9999" autocomplete="tel">
       </div>
       <div id="campoEmail">
         <label for="contaEmail">E-mail</label>
@@ -85,6 +103,9 @@ function mostrarFormulario(tipo = "entrar") {
     <button class="account-secondary" type="button" id="alternarConta" ${tipo === "admin" ? "hidden" : ""}>
       ${registro ? "Já tenho conta" : "Criar uma conta"}
     </button>
+    <button class="account-secondary" type="button" id="solicitarTrocaSenha" ${registro || tipo === "admin" ? "hidden" : ""}>
+      Esqueci minha senha
+    </button>
   `;
 
   const modal = criarModal(conteudo);
@@ -94,10 +115,11 @@ function mostrarFormulario(tipo = "entrar") {
   const avisoAdmin = modal.querySelector("#avisoAdmin");
   const botaoEnvio = modal.querySelector(".account-primary");
   const alternar = modal.querySelector("#alternarConta");
+  const botaoSolicitarTroca = modal.querySelector("#solicitarTrocaSenha");
   const campoTelefone = modal.querySelector("#contaTelefone");
   if (campoTelefone) {
     campoTelefone.addEventListener("input", () => {
-      campoTelefone.value = campoTelefone.value.replace(/\D/g, "").slice(0, 11);
+      campoTelefone.value = formatarTelefoneConta(campoTelefone.value);
     });
   }
 
@@ -109,11 +131,13 @@ function mostrarFormulario(tipo = "entrar") {
       tipoAtual = tab.dataset.form;
       modoAtual = "login";
       camposRegistro.hidden = true;
+      if (campoTelefone) campoTelefone.required = false;
       avisoAdmin.hidden = tipoAtual !== "admin";
       modal.querySelectorAll(".account-tab").forEach(item => item.classList.remove("active"));
       tab.classList.add("active");
       botaoEnvio.textContent = "Entrar";
       if (alternar) alternar.hidden = tipoAtual === "admin";
+      if (botaoSolicitarTroca) botaoSolicitarTroca.hidden = tipoAtual === "admin";
       mensagem.textContent = "";
       modal.querySelector("h2").textContent = "Entrar";
     });
@@ -123,11 +147,17 @@ function mostrarFormulario(tipo = "entrar") {
     alternar.addEventListener("click", () => {
       modoAtual = modoAtual === "login" ? "registrar" : "login";
       camposRegistro.hidden = modoAtual !== "registrar";
+      if (campoTelefone) campoTelefone.required = modoAtual === "registrar";
       alternar.textContent = modoAtual === "registrar" ? "Já tenho conta" : "Criar uma conta";
       botaoEnvio.textContent = modoAtual === "registrar" ? "Criar conta" : "Entrar";
+      if (botaoSolicitarTroca) botaoSolicitarTroca.hidden = modoAtual === "registrar";
       modal.querySelector("h2").textContent = modoAtual === "registrar" ? "Criar conta" : "Entrar";
       mensagem.textContent = "";
     });
+  }
+
+  if (botaoSolicitarTroca) {
+    botaoSolicitarTroca.addEventListener("click", () => mostrarSolicitacaoTrocaSenha());
   }
 
   form.addEventListener("submit", async evento => {
@@ -138,7 +168,7 @@ function mostrarFormulario(tipo = "entrar") {
       if (modoAtual === "registrar") {
         await requisicaoConta("registrar", {
           nome: modal.querySelector("#contaNome").value.trim(),
-          telefone: modal.querySelector("#contaTelefone").value.trim(),
+          telefone: campoTelefone.value.replace(/\D/g, ""),
           email: modal.querySelector("#contaEmail").value.trim(),
           senha: modal.querySelector("#contaSenha").value
         });
@@ -149,8 +179,64 @@ function mostrarFormulario(tipo = "entrar") {
           senha: modal.querySelector("#contaSenha").value
         });
       }
-      modal.remove();
-      atualizarConta();
+      window.location.replace("home.php");
+    } catch (erro) {
+      mensagem.textContent = erro.message;
+    }
+  });
+}
+
+function mostrarSolicitacaoTrocaSenha(email = "", telefone = "") {
+  const modal = criarModal(`
+    <h2>Solicitar troca de senha</h2>
+    <p class="account-admin-notice">
+      O administrador confirmará sua identidade pelo telefone cadastrado antes de aprovar. A senha só muda após a aprovação.
+    </p>
+    <form id="formSolicitacaoSenha">
+      <label for="solicitacaoEmail">E-mail cadastrado (opcional)</label>
+      <input id="solicitacaoEmail" type="email" autocomplete="email" placeholder="Use se o telefone estiver em mais de uma conta">
+      <label for="solicitacaoTelefone">Telefone cadastrado</label>
+      <input id="solicitacaoTelefone" type="tel" required minlength="14" maxlength="15" pattern="\\([0-9]{2}\\) [0-9]{4,5}-[0-9]{4}" inputmode="numeric" placeholder="(11) 99999-9999" autocomplete="tel">
+      <label for="senhaNova">Nova senha</label>
+      <input id="senhaNova" type="password" required minlength="6" maxlength="100" autocomplete="new-password">
+      <label for="confirmarSenhaNova">Confirme a nova senha</label>
+      <input id="confirmarSenhaNova" type="password" required minlength="6" maxlength="100" autocomplete="new-password">
+      <p class="account-message" id="mensagemSolicitacaoSenha" role="status"></p>
+      <button class="account-primary" type="submit">Enviar pedido ao administrador</button>
+    </form>
+    <button class="account-secondary" type="button" id="voltarLogin">Voltar ao login</button>
+  `);
+
+  const campoEmail = modal.querySelector("#solicitacaoEmail");
+  const campoTelefone = modal.querySelector("#solicitacaoTelefone");
+  const campoSenha = modal.querySelector("#senhaNova");
+  const campoConfirmacao = modal.querySelector("#confirmarSenhaNova");
+  const mensagem = modal.querySelector("#mensagemSolicitacaoSenha");
+  campoEmail.value = email;
+  campoTelefone.value = formatarTelefoneConta(telefone);
+  campoTelefone.addEventListener("input", () => {
+    campoTelefone.value = formatarTelefoneConta(campoTelefone.value);
+  });
+
+  modal.querySelector("#voltarLogin").addEventListener("click", () => mostrarFormulario("entrar"));
+  modal.querySelector("#formSolicitacaoSenha").addEventListener("submit", async evento => {
+    evento.preventDefault();
+    mensagem.textContent = "";
+    if (campoSenha.value !== campoConfirmacao.value) {
+      mensagem.textContent = "As senhas não conferem.";
+      campoConfirmacao.focus();
+      return;
+    }
+
+    try {
+      const resultado = await requisicaoConta("solicitar_troca_senha", {
+        email: campoEmail.value.trim(),
+        telefone: campoTelefone.value.replace(/\D/g, ""),
+        senha_nova: campoSenha.value
+      });
+      mensagem.textContent = resultado.mensagem;
+      campoSenha.value = "";
+      campoConfirmacao.value = "";
     } catch (erro) {
       mensagem.textContent = erro.message;
     }
@@ -161,7 +247,9 @@ async function mostrarContaLogada(conta) {
   const admin = conta.tipo === "admin";
   const conteudo = `
     <h2 id="tituloConta"></h2>
+    <p class="account-message" id="mensagemSessao" role="status"></p>
     ${admin ? "<p>Acesso administrativo ativo.</p>" : `
+      <p class="account-discount-notice">Você tem 5% de desconto nos serviços enquanto estiver logado como cliente.</p>
       <section class="account-details" aria-label="Dados da conta">
         <div class="account-detail">
           <span class="account-detail-label">E-mail</span>
@@ -181,13 +269,14 @@ async function mostrarContaLogada(conta) {
       Histórico de agendamentos
     </button>`}
     ${admin ? '<button class="account-primary" type="button" id="abrirPainel">Abrir painel administrativo</button>' : '<button class="account-primary" type="button" id="irAgendamento">Fazer agendamento</button>'}
+    ${admin ? "" : '<button class="account-secondary" type="button" id="solicitarTrocaSenhaConta">Solicitar troca de senha</button>'}
     <button class="account-secondary" type="button" id="logoutConta">Sair da conta</button>
   `;
   const modal = criarModal(conteudo);
   modal.querySelector("#tituloConta").textContent = `Olá, ${admin ? "Administrador" : conta.nome}`;
   if (!admin) {
     modal.querySelector("#emailConta").textContent = mascararEmail(conta.email);
-    modal.querySelector("#telefoneConta").textContent = conta.telefone || "Não informado";
+    modal.querySelector("#telefoneConta").textContent = formatarTelefoneConta(conta.telefone) || "Não informado";
   }
 
   const historico = modal.querySelector("#verHistorico");
@@ -205,10 +294,21 @@ async function mostrarContaLogada(conta) {
     window.location.href = "agenda.php";
   });
 
+  const solicitarTroca = modal.querySelector("#solicitarTrocaSenhaConta");
+  if (solicitarTroca) {
+    solicitarTroca.addEventListener("click", () => {
+      mostrarSolicitacaoTrocaSenha(conta.email, conta.telefone);
+    });
+  }
+
   modal.querySelector("#logoutConta").addEventListener("click", async () => {
-    await requisicaoConta("logout", {});
-    modal.remove();
-    atualizarConta();
+    const mensagem = modal.querySelector("#mensagemSessao");
+    try {
+      await requisicaoConta("logout", {});
+      window.location.replace("home.php");
+    } catch (erro) {
+      mensagem.textContent = erro.message;
+    }
   });
 }
 
@@ -282,6 +382,7 @@ async function atualizarConta() {
   if (!loginIcon) return;
   try {
     const conta = await requisicaoConta("conta", null, "GET");
+    publicarConta(conta);
     const rotulo = loginIcon.querySelector(".login-label");
     loginIcon.classList.toggle("logged", conta.autenticado);
     loginIcon.title = conta.autenticado ? `Conta: ${conta.nome}` : "Registrar ou entrar";
@@ -292,6 +393,7 @@ async function atualizarConta() {
       ? () => mostrarContaLogada(conta)
       : () => mostrarFormulario("cadastrar");
   } catch (erro) {
+    publicarConta({ autenticado: false });
     const rotulo = loginIcon.querySelector(".login-label");
     loginIcon.setAttribute("aria-label", "Registrar ou entrar");
     if (rotulo) rotulo.textContent = "Registrar";

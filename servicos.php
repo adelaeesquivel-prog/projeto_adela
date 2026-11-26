@@ -49,7 +49,7 @@ if (empty($servicos)) {
             "id" => 5,
             "nome" => "Corte infantil",
             "descricao" => "Atendimento paciente e cuidadoso para os pequenos.",
-            "preco" => 28.00,
+            "preco" => 23.00,
             "icone" => "✂"
         ],
         [
@@ -70,7 +70,7 @@ if (empty($servicos)) {
     <title>Serviços | Léo Barbas</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="site-pages.css">
-    <script src="account.js" defer></script>
+    <script src="account.js?v=20261126-phone-mask-3" defer></script>
     <script src="servicos.js" defer></script>
 </head>
 <body>
@@ -81,6 +81,7 @@ if (empty($servicos)) {
             <span class="eyebrow">NOSSOS SERVIÇOS</span>
             <h1>Escolha o cuidado ideal para o seu visual</h1>
             <p>Selecione um serviço abaixo para conferir o valor ou seguir para o agendamento</p>
+            <p class="discount-notice" id="discountNotice" role="status">Faça login como cliente para aproveitar 5% de desconto.</p>
 
             <div id="cardsServicos" class="feature-grid">
                 <?php foreach ($servicos as $servico): ?>
@@ -89,10 +90,12 @@ if (empty($servicos)) {
                     $nome = (string) ($servico["nome"] ?? "");
                     $descricaoTexto = trim((string) ($servico["descricao"] ?? ""));
                     $descricao = $descricaoTexto !== "" ? $descricaoTexto : "Serviço pensado para valorizar seu visual.";
-                    $preco = number_format((float) ($servico["preco"] ?? 0), 2, ",", ".");
+                    $precoNumerico = (float) ($servico["preco"] ?? 0);
+                    $preco = number_format($precoNumerico, 2, ",", ".");
+                    $precoDados = number_format($precoNumerico, 2, ".", "");
                     $icone = (string) ($servico["icone"] ?? "✂");
                     ?>
-                    <article class="feature service-card" data-id="<?= Utils::escaparHtml($id) ?>" data-nome="<?= Utils::escaparHtml($nome) ?>">
+                    <article class="feature service-card" data-id="<?= Utils::escaparHtml($id) ?>" data-nome="<?= Utils::escaparHtml($nome) ?>" data-preco="<?= Utils::escaparHtml($precoDados) ?>">
                         <span class="feature-icon"><?= Utils::escaparHtml($icone) ?></span>
                         <h3><?= Utils::escaparHtml($nome) ?></h3>
                         <p><?= Utils::escaparHtml($descricao) ?></p>
