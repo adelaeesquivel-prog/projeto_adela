@@ -21,7 +21,7 @@
         <input type="text" id="nome" required placeholder="Digite seu nome">
 
         <label for="telefone">Telefone</label>
-        <input type="tel" id="telefone" required minlength="10" maxlength="11" pattern="[0-9]{10,11}" inputmode="numeric" placeholder="DDD + número (10 ou 11 dígitos)">
+        <input type="tel" id="telefone" required minlength="14" maxlength="15" pattern="\([0-9]{2}\) [0-9]{4,5}-[0-9]{4}" inputmode="numeric" placeholder="(11) 99999-9999">
 
         <label for="servico">Escolha o serviço</label>
         <select id="servico" required></select>

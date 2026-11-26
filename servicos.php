@@ -79,8 +79,8 @@ if (empty($servicos)) {
     <main>
         <section class="intro-section">
             <span class="eyebrow">NOSSOS SERVIÇOS</span>
-            <h1>Escolha o cuidado ideal para o seu visual.</h1>
-            <p>Selecione um serviço abaixo para conferir o valor ou seguir para o agendamento.</p>
+            <h1>Escolha o cuidado ideal para o seu visual</h1>
+            <p>Selecione um serviço abaixo para conferir o valor ou seguir para o agendamento</p>
 
             <div id="cardsServicos" class="feature-grid">
                 <?php foreach ($servicos as $servico): ?>

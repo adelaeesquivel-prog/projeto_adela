@@ -12,7 +12,7 @@
     </div>
   </div>
   <nav class="site-nav" aria-label="Navegação principal">
-    <a class="<?= ($paginaAtual ?? '') === 'home' ? 'active' : '' ?>" href="home.php">Home</a>
+    <a class="<?= ($paginaAtual ?? '') === 'home' ? 'active' : '' ?>" href="index.php">Home</a>
     <a class="<?= ($paginaAtual ?? '') === 'servicos' ? 'active' : '' ?>" href="servicos.php">Serviços</a>
     <a class="<?= ($paginaAtual ?? '') === 'agenda' ? 'active' : '' ?>" href="agenda.php">Agendamento</a>
   </nav>

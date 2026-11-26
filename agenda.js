@@ -30,6 +30,18 @@ function mostrarMensagem(texto) {
   if (aviso) aviso.textContent = texto;
 }
 
+function formatarTelefone(valor) {
+  const digitos = valor.replace(/\D/g, "").slice(0, 11);
+  if (digitos.length <= 2) return digitos ? `(${digitos}` : "";
+
+  const ddd = digitos.slice(0, 2);
+  const numero = digitos.slice(2);
+  const tamanhoPrefixo = digitos.length > 10 ? 5 : 4;
+  if (numero.length <= tamanhoPrefixo) return `(${ddd}) ${numero}`;
+
+  return `(${ddd}) ${numero.slice(0, tamanhoPrefixo)}-${numero.slice(tamanhoPrefixo)}`;
+}
+
 async function carregarServicos() {
   const select = document.getElementById("servico");
   if (!select) return;
@@ -331,7 +343,7 @@ function configurarEventos() {
   const campoTelefone = document.getElementById("telefone");
   if (campoTelefone) {
     campoTelefone.addEventListener("input", () => {
-      campoTelefone.value = campoTelefone.value.replace(/\D/g, "").slice(0, 11);
+      campoTelefone.value = formatarTelefone(campoTelefone.value);
     });
   }
 
@@ -343,7 +355,7 @@ function configurarEventos() {
 
       const dados = {
         nome: document.getElementById("nome").value.trim(),
-        telefone: document.getElementById("telefone").value.trim(),
+        telefone: document.getElementById("telefone").value.replace(/\D/g, ""),
         servico_id: Number(document.getElementById("servico").value),
         data: document.getElementById("data").value,
         horario: document.getElementById("horario").value

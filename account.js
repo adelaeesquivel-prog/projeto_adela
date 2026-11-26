@@ -55,8 +55,17 @@ function mostrarFormulario(tipo = "entrar") {
     <h2>${registro ? "Criar conta" : "Entrar"}</h2>
     <div class="account-tabs" aria-label="Tipo de conta">
       <button type="button" class="account-tab ${tipo !== "admin" ? "active" : ""}" data-form="cliente">Cliente</button>
-      <button type="button" class="account-tab ${tipo === "admin" ? "active" : ""}" data-form="admin">Administrador</button>
+      <button type="button" class="account-tab account-tab-admin ${tipo === "admin" ? "active" : ""}" data-form="admin">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="4" y="10" width="16" height="11" rx="2"></rect>
+          <path d="M8 10V7a4 4 0 0 1 8 0v3"></path>
+        </svg>
+        Administrador
+      </button>
     </div>
+    <p class="account-admin-notice" id="avisoAdmin" role="status" ${tipo !== "admin" ? "hidden" : ""}>
+      Área restrita: acesso exclusivo para administradores.
+    </p>
     <form id="formConta">
       <div id="camposRegistro" ${registro ? "" : "hidden"}>
         <label for="contaNome">Nome</label>
@@ -82,6 +91,7 @@ function mostrarFormulario(tipo = "entrar") {
   const form = modal.querySelector("#formConta");
   const mensagem = modal.querySelector("#contaMensagem");
   const camposRegistro = modal.querySelector("#camposRegistro");
+  const avisoAdmin = modal.querySelector("#avisoAdmin");
   const botaoEnvio = modal.querySelector(".account-primary");
   const alternar = modal.querySelector("#alternarConta");
   const campoTelefone = modal.querySelector("#contaTelefone");
@@ -99,6 +109,7 @@ function mostrarFormulario(tipo = "entrar") {
       tipoAtual = tab.dataset.form;
       modoAtual = "login";
       camposRegistro.hidden = true;
+      avisoAdmin.hidden = tipoAtual !== "admin";
       modal.querySelectorAll(".account-tab").forEach(item => item.classList.remove("active"));
       tab.classList.add("active");
       botaoEnvio.textContent = "Entrar";
