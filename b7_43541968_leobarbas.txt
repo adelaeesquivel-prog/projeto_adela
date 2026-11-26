@@ -1,1 +1,4 @@
-b7_43541968_leobarbas
+nome do banco: b7_43541968_leobarbas
+nome: b7_43541968
+senha:  Luadme@1
+
